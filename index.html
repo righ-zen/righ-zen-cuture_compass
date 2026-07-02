@@ -6,7 +6,6 @@
 <title>CultureCompass</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- 海外のモダンアプリで人気の丸みと高級感のある Nunito フォントを採用 -->
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -49,7 +48,6 @@
     overflow:hidden;
     display:flex;
     flex-direction:column;
-    /* 本物のノッチを避ける安全なパディング */
     padding-top: 44px;
     background:var(--parchment);
   }
@@ -108,7 +106,7 @@
     font-weight:900;
   }
 
-  /* ---------- 洗練されたモダンフラットカード ---------- */
+  /* ---------- card ---------- */
   .card{
     background:#fff;
     border:2px solid var(--line);
@@ -119,7 +117,7 @@
   }
   .card-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
 
-  /* ---------- ぽってり感のある立体3Dボタン ---------- */
+  /* ---------- 3D buttons ---------- */
   button{font-family:var(--body);}
   .btn{
     appearance:none;
@@ -170,7 +168,7 @@
     display:flex;
     align-items:center;
     justify-content:space-around;
-    padding:12px 6px 32px; /* 下部に少し余裕を持たせる */
+    padding:12px 6px 32px;
     background:#fff;
     border-top:2px solid var(--line);
     z-index:60;
@@ -303,7 +301,6 @@
   .li-title{font-weight:800; font-size:14.5px; color:var(--text-main);}
   .li-sub{font-weight:600; font-size:12.5px; color:var(--text-mute); margin-top:2px;}
 
-  /* 丸みのある洗練されたゲージ */
   .quiz-progress{height:12px; border-radius:10px; background:var(--parchment-dim); overflow:hidden; margin-bottom:20px; border: 2px solid var(--line);}
   .quiz-progress-fill{height:100%; background:var(--brass); border-radius:8px; transition:width 0.25s ease;}
 
@@ -342,7 +339,6 @@
 </div>
 
 <script>
-/* キャラクター要素を完全に廃止し、スマートかつ親しみやすいトーンに文言をリチューン */
 const memoryStore = {};
 async function storeGet(key){
   try{
@@ -365,27 +361,27 @@ async function storeSet(key, value){
 const COUNTRIES = ["Japan","United States","China","South Korea","India","Vietnam","Indonesia","Philippines","Thailand","Taiwan","United Kingdom","Germany","France","Italy","Spain","Netherlands","Sweden","Poland","Russia","Turkey","Brazil","Mexico","Argentina","Canada","Australia","New Zealand","Nigeria","Kenya","South Africa","Egypt","Saudi Arabia","United Arab Emirates","Iran","Israel"];
 
 const DMIS_STAGES = [
-  { name:"Denial (自文化中心・普遍)", group:"Ethnocentric", color:"var(--rust)", blurb:"まだ異文化の違いを深く意識していない状態です。「自分のやり方が普通」と感じる、すべてのスタート地点となるステージです。" },
-  { name:"Defense (自文化中心・防衛)", group:"Ethnocentric", color:"var(--rust)", blurb:"文化の違いを認識したものの、少し圧倒されて「自分の文化の方が優れている」と境界線を引いて防衛している状態です。" },
-  { name:"Minimization (自文化中心・最小化)", group:"Ethnocentric", color:"var(--brass)", blurb:"「色々違っても、根っこはみんな同じ人間」と共通点を見出している状態です。親しみやすさの反面、深い文化の違いを見落としがちになることもあります。" },
-  { name:"Acceptance (文化相対主義・受容)", group:"Ethnorelative", color:"var(--sage)", blurb:"他の文化を「自分とは異なるけれど、等しく独自の論理を持つ仕組み」としてフラットに認め、尊重できている状態です。" },
-  { name:"Adaptation (文化相対主義・適応)", group:"Ethnorelative", color:"var(--sage)", blurb:"相手の文化の視点から世界を見つめ、状況に応じて自分の行動やコミュニケーションを柔軟に変えられる状態です。" },
-  { name:"Integration (文化相対主義 => 統合)", group:"Ethnorelative", color:"var(--sage)", blurb:"複数の異なる文化の視点が自分の中に自然に溶け込み、アイデンティティの一部として自在に行き来できている状態です。" }
+  { name:"Denial", group:"Ethnocentric", color:"var(--rust)", blurb:"Cultural difference isn't fully registered yet — one's own way of doing things feels like simply 'how things are'." },
+  { name:"Defense", group:"Ethnocentric", color:"var(--rust)", blurb:"Difference is noticed but experienced as a threat, often leading to 'us vs. them' thinking or an assumption of cultural superiority." },
+  { name:"Minimization", group:"Ethnocentric", color:"var(--brass)", blurb:"Surface differences are visible, but deep down there is a strong insistence that 'we are all the same,' which can flatten critical cultural nuances." },
+  { name:"Acceptance", group:"Ethnorelative", color:"var(--sage)", blurb:"Other cultures are recognized as genuinely different and equally legitimate ways of organizing reality — not better or worse, just alternative frames." },
+  { name:"Adaptation", group:"Ethnorelative", color:"var(--sage)", blurb:"You can consciously shift perspective and communication styles to interact effectively, seeing situations through more than one cultural lens." },
+  { name:"Integration", group:"Ethnorelative", color:"var(--sage)", blurb:"Cultural frames become fluid parts of identity. You move between different cultural contexts naturally and authentically." }
 ];
 
 const DMIS_QUESTIONS = [
-  "異文化の人の行動に困惑した時、すぐに否定せず「彼らにとってどんな背景があるのだろう」と考えるアプローチをとる。",
-  "自分が苦手だと感じる現地の習慣でも、現地の人の立場に立って「なぜそうするのか」を客観的に説明できる。",
-  "自分の文化のルールだけを基準にして、相手の文化を一方的に判断してしまっている瞬間に自ら気づくことができる。",
-  "「自分の生まれ育った文化のやり方だけが、唯一の合理的な正解ではない」と柔軟に受け入れられる。",
-  "異文化のズレからストレスを感じた時、「何がトリガーとなってその感情が生まれたのか」を冷静に分析できる。",
-  "話す相手の文化（表現の直接さ、丁寧さ、沈黙の長さなど）に合わせて、自分のコミュニケーション方法を調整できる。",
-  "現地の人が物静かだったり、逆にハッキリ意見を言ったりした時、性格だけでなく文化的背景も考慮して対応できる。",
-  "見慣れない習慣に出会った時、好き嫌いを判断する前に、まずその習慣が持つ「現地なりの合理的な理由」を探そうとする。",
-  "同じ出来事に対して、自分の文化の視点と現地の視点の両方を、どちらが正しいか決めずに同時にホールドできる。",
-  "異文化への理解が深まった結果、これまでの自分の習慣や考え方をより良い形へと柔軟に変えたことがある。",
-  "他人の行動だけでなく、自分自身の普段の振る舞いにも「自分の文化的なクセ」が出ているなと自覚することがある。",
-  "周囲が現地の人ばかりの完全なアウェイな環境にいても、過度に萎縮せず自分らしく落ち着いて過ごすことができる。"
+  "When something a host-culture person does confuses me, my first instinct is to ask what it means to them, not to assume it's wrong.",
+  "I can usually explain a cultural custom I dislike in terms that make sense from inside that culture, not just from my own perspective.",
+  "I catch myself when I am judging another culture using my own culture's hidden rules as the only standard.",
+  "I am comfortable admitting that my own culture's way of doing something isn't the only reasonable or logical way.",
+  "When I feel frustrated by cultural differences, I can usually step back and pinpoint what specifically triggered that reaction.",
+  "I can adjust how I communicate (directness, formality, handling silence) depending on the cultural context of who I am speaking with.",
+  "I don't assume that people who are polite, quiet, or direct in one culture are behaving purely out of individual personality traits.",
+  "I actively look for the internal logic behind an unfamiliar custom before deciding how I feel about it personally.",
+  "I can hold two conflicting cultural perspectives on the same situation without feeling the immediate need to choose a 'correct' one.",
+  "I have intentionally changed a habit or assumption of mine after seeing it more clearly through another culture's eyes.",
+  "I regularly notice implicit cultural influences on my own behavior, rather than only identifying them in other people.",
+  "I feel reasonably steady and self-contained, not just tolerant, when I am the obvious cultural outsider in a room."
 ];
 
 function scoreToStageIndex(total){
@@ -393,39 +389,39 @@ function scoreToStageIndex(total){
 }
 
 const MOODS = [
-  { v:1, e:"😫", label:"少し疲れ気味かも" },
-  { v:2, e:"😕", label:"ややモヤモヤする" },
-  { v:3, e:"😐", label:"いつも通りフラット" },
-  { v:4, e:"🙂", label:"良いペースで馴染んでいる" },
-  { v:5, e:"🥳", label:"とても充実している！" }
+  { v:1, e:"😫", label:"Overwhelmed" },
+  { v:2, e:"😕", label:"Slightly Uneasy" },
+  { v:3, e:"😐", label:"Neutral / Flat" },
+  { v:4, e:"🙂", label:"Settling In" },
+  { v:5, e:"🥳", label:"Thriving!" }
 ];
 
 const CHALLENGES = [
-  "ホスト文化の人に、自分がまだ深く理解できていない習慣について「これにはどんな背景があるの？」とフラットに尋ねてみましょう。",
-  "今日、「自分は今、外部の人間だな」と感じた瞬間を振り返り、何がきっかけだったか1文で記録してみましょう。",
-  "現地でよく使われる挨拶やジェスチャーで、まだ試したことのないものを今日1回だけ自然に使ってみましょう。",
-  "今日誰かに対して感じた違和感が、「文化背景の違い」なのか「その人のパーソナリティ」なのか、一歩引いて考えてみましょう。",
-  "現地の人に「友達と意見が合わない時はどう解決する？」と聞いてみましょう。自分の国とのアプローチの違いに注目です。",
-  "今日の会話の中で「沈黙」がどのように機能していたか観察してみましょう。それは気まずさですか？それともリスペクトですか？",
-  "現地の人が普段行っているのと全く同じマナーや食べ方で、今日のご飯を最初から最後まで体験してみましょう。",
-  "周囲の人々がどのくらいストレートに意見を伝えているか、今日の出来事から具体的な例を1つ探してみましょう。",
-  "現地の人に、彼らにてって本当に大切な年中行事や伝統について、個人的なエピソードを尋ねてみましょう。",
-  "パーソナルスペースやアイコンタクトの長さなど、自分の「当たり前」と現地の「当たり前」のズレを1つ見つけてみましょう。",
-  "自分の国のユニークな習慣を、現地の友人に「実は私の国では…」と、初めて聞く人にも伝わるように説明してみましょう。",
-  "現地の言葉で、他の言語に一言で翻訳しにくいユニークな概念を持つ単語を1つ見つけ、その背景を調べてみましょう。",
-  "今日、周囲の人が目上の人や周囲の人にどのように敬意を示しているか観察し、自分の文化と比較してみましょう。",
-  "今週、異文化の違いを上手く乗りこなせた瞬間や、一歩成長できたと感じるエピソードを1つ思い出してみましょう。"
+  "Ask someone from your host culture to explain a custom you don't fully understand — completely without judging it.",
+  "Notice one specific moment today where you felt like an outsider. Write one objective sentence about what triggered it.",
+  "Try a greeting, phrase, or gesture from your host culture that you haven't personally used before.",
+  "Identify one assumption you are making about someone around you today, and check whether it is cultural or just personal.",
+  "Ask a local how they typically handle a minor disagreement with a friend. Compare it to your home approach.",
+  "Pay attention to how silence is used in a conversation today. Is it comfortable, awkward, or a sign of respect?",
+  "Eat a meal exactly the way it is typically eaten in your host culture, from start to finish.",
+  "Notice how directly or indirectly people give feedback around you today. Spot one concrete example.",
+  "Ask a local about a holiday or tradition from their culture that genuinely matters to them personally.",
+  "Notice one thing about personal space, eye contact, or touch that differs from what feels 'normal' to you.",
+  "Try explaining a common custom from your home culture to a local as if they had never heard of it before.",
+  "Identify a local word or phrase that doesn't translate neatly into your language. Ask why that concept exists.",
+  "Observe how people show respect to authority or elders today, and compare it directly to your home culture.",
+  "Reflect on one moment this week where you handled a cultural difference smoothly and feel proud of your response."
 ];
 
 const JOURNAL_PROMPTS = [
-  "今日気づいた「文化の違い」を感じた瞬間について教えてください。その時、最初はどのように受け止めましたか？",
-  "今日、つい自分の文化の基準だけで考えてしまった場面はありますか？それはどのような前提から来ていると思いますか？",
-  "少し噛み合わなかったと感じる現地の人とのやり取りを振り返り、相手の視点に立つとどのような論理がありそうか考えてみましょう。",
-  "現地に来てから、自分の母国の文化について「実はこれって独特だったんだ」と新しく見えてきた視点はありますか？",
-  "今日の小さな成功体験（上手くいったことや、少し嬉しかった現地の人とのポジティブな交流）を記録してみましょう。",
-  "現在、正直に言って少しストレスに感じていることを書き出してみましょう。解決策を出す必要はありません。",
-  "現地の生活のなかで、あなたをサポートしてくれたり、安心させてくれたりする人はいますか？その人は何をしてくれましたか？",
-  "フリースペースです。現在、心に浮かんでいる異文化生活でのリアルな気づきや感情を、自由に書き残してみましょう。"
+  "Describe a moment today when you noticed a cultural difference. How did you interpret it initially?",
+  "What implicit assumption did you catch yourself making today, and where do you think it originates?",
+  "Recall an interaction that felt confusing. What might explain it logically from the other person's cultural frame?",
+  "What is something from your home culture that you are starting to view differently since arriving here?",
+  "Write about a small cross-cultural win — a moment where an interaction went more smoothly than expected.",
+  "What feels genuinely difficult right now? No need to solve it immediately, just frame it honestly.",
+  "Describe someone who has helped you feel more at ease here. What exactly did they do?",
+  "Free write — anything currently on your mind regarding your cultural adjustment process."
 ];
 
 const ICONS = {
@@ -443,7 +439,7 @@ const ICONS = {
 };
 function icon(name, size){ return `<svg viewBox="0 0 24 24" width="${size||22}" height="${size||22}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`; }
 
-const TABS = [{ id:"home", label:"ホーム", icon:"home" }, { id:"coach", label:"コーチ", icon:"coach" }, { id:"track", label:"ログ", icon:"track" }, { id:"journal", label:"ノート", icon:"journal" }, { id:"growth", label:"成長分析", icon:"growth" }];
+const TABS = [{ id:"home", label:"Home", icon:"home" }, { id:"coach", label:"Coach", icon:"coach" }, { id:"track", label:"Track", icon:"track" }, { id:"journal", label:"Journal", icon:"journal" }, { id:"growth", label:"Growth", icon:"growth" }];
 
 let STATE = { profile: null, dmis: null, tracker: [], journal: [], challenges: { completedDates:{}, streak:0, lastDate:null }, coachHistory: [] };
 let activeTab = "home"; let onboardingStep = 0; let onboardingDraft = { name:"", home:"", host:"" };
@@ -476,11 +472,11 @@ function sparkline(values, opts){
 }
 
 function classifyPhase(entries){
-  if (entries.length < 3) return { name:"Honeymoon Phase", note:"すべての体験が新鮮で、ポジティブな刺激に満ちている初期段階です。異文化への適応の第一歩を楽しんでください。" };
+  if (entries.length < 3) return { name:"Honeymoon Phase", note:"Everything feels fresh, engaging, and novel. Cultural adaptation fatigue typically emerges slightly later in the journey." };
   const recent = entries.slice(-5).map(e=>e.mood); const avg = recent.reduce((a,b)=>a+b,0)/recent.length;
-  if (avg < 2.5) return { name:"Culture Shock Phase", note:"現地の習慣への違和感や疲れが出やすい時期です。これは思考が「異文化の論理」に適応しようと成長している健康な兆候です。" };
-  if (avg < 3.6) return { name:"Adjustment Phase", note:"現地の暗黙のルールや生活リズムを徐々に把握し、自分らしい日常のルーティンを確立でき始めている状態です。" };
-  return { name:"Acceptance Phase", note:"双方の文化をありのままに受け入れ、どちらの環境下でも自分らしくしなやかに機能できている安定した状態です。" };
+  if (avg < 2.5) return { name:"Culture Shock Phase", note:"Frustrations with host habits or mental fatigue are prominent. This is a vital sign of cognitive growth as your mind adapts to alternative logic." };
+  if (avg < 3.6) return { name:"Adjustment Phase", note:"You are steadily decoding unwritten social rules and establishing functional everyday routines in your host environment." };
+  return { name:"Acceptance Phase", note:"You are successfully holding both cultural frames, operating comfortably and authentically without constant friction." };
 }
 
 async function boot(){
@@ -502,55 +498,55 @@ function switchTab(id){
   document.querySelectorAll(".tab").forEach(b => b.toggle("active", b.dataset.tab===id)); if (id==="coach") scrollChatToBottom();
 }
 
-function countryOptions(selected){ return `<option value="" disabled ${!selected?'selected':''}>国または文化を選択してください…</option>` + COUNTRIES.map(c=>`<option value="${c}" ${c===selected?'selected':''}>${c}</option>`).join(""); }
+function countryOptions(selected){ return `<option value="" disabled ${!selected?'selected':''}>Choose a country/culture…</option>` + COUNTRIES.map(c=>`<option value="${c}" ${c===selected?'selected':''}>${c}</option>`).join(""); }
 
 function renderOnboarding(){
   const scroll = document.getElementById("onboardingScroll"); const footer = document.getElementById("onboardingFooter"); let body = "", footerHtml = "";
   if (onboardingStep === 0){
     body = `<div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:24px;">
         ${compassDialSVG(null, {size:190})}
-        <div class="eyebrow" style="margin-top:16px; color:var(--brass-light);">DMIS理論に基づく異文化コーチング</div>
+        <div class="eyebrow" style="margin-top:16px; color:var(--brass-light);">DMIS-Guided Intercultural Coaching</div>
         <h1 style="font-family:var(--display); font-weight:900; font-size:34px; margin:12px 0 6px;">CultureCompass</h1>
         <p style="font-size:15px; line-height:1.6; color:rgba(247,242,231,0.8); max-width:290px;">
-          異文化をただ耐えるのではなく、構造的に理解するためのコンパス。簡単な質問の後、あなたの専用ルートが始まります。
+          An intercultural compass built to help you structurally understand cultures, not just survive them. A short setup, then your journey begins.
         </p>
       </div>`;
-    footerHtml = `<button class="btn btn-brass btn-block" onclick="onboardingStep=1; renderOnboarding();">セットアップを始める</button>`;
+    footerHtml = `<button class="btn btn-brass btn-block" onclick="onboardingStep=1; renderOnboarding();">Get Started</button>`;
   }
   else if (onboardingStep === 1){
     body = `<div class="eyebrow" style="color:var(--brass-light);">STEP 1 / 4</div>
-      <h2 style="font-family:var(--display); font-size:24px; font-weight:900; margin:8px 0 18px;">プロフィール名</h2>
-      <div class="field"><label class="field-label">お名前</label>
-        <input type="text" id="ob-name" placeholder="例：Aoi" value="${escapeHtml(onboardingDraft.name)}">
+      <h2 style="font-family:var(--display); font-size:24px; font-weight:900; margin:8px 0 18px;">What should we call you?</h2>
+      <div class="field"><label class="field-label">Your Name</label>
+        <input type="text" id="ob-name" placeholder="e.g. Aoi" value="${escapeHtml(onboardingDraft.name)}">
       </div>`;
-    footerHtml = `<div style="display:flex; gap:10px; width:100%"><button class="btn btn-ghost" style="flex:1" onclick="onboardingStep=0; renderOnboarding();">戻る</button><button class="btn btn-brass" style="flex:2" onclick="obSaveName();">次へ進む</button></div>`;
+    footerHtml = `<div style="display:flex; gap:10px; width:100%"><button class="btn btn-ghost" style="flex:1" onclick="onboardingStep=0; renderOnboarding();">Back</button><button class="btn btn-brass" style="flex:2" onclick="obSaveName();">Continue</button></div>`;
   }
   else if (onboardingStep === 2){
     body = `<div class="eyebrow" style="color:var(--brass-light);">STEP 2 / 4</div>
-      <h2 style="font-family:var(--display); font-size:24px; font-weight:900; margin:8px 0 6px;">あなたの起点となる文化（HOME）</h2>
-      <p style="font-size:14px; color:rgba(247,242,231,0.7); margin:0 0 16px;">あなたが生まれ育ったり、アイデンティティの軸となっている文化を選択してください。</p>
-      <div class="field"><label class="field-label">ホーム文化</label><select id="ob-home">${countryOptions(onboardingDraft.home)}</select></div>`;
-    footerHtml = `<div style="display:flex; gap:10px; width:100%"><button class="btn btn-ghost" style="flex:1" onclick="onboardingStep=1; renderOnboarding();">戻る</button><button class="btn btn-brass" style="flex:2" onclick="obSaveHome();">次へ進む</button></div>`;
+      <h2 style="font-family:var(--display); font-size:24px; font-weight:900; margin:8px 0 6px;">Where is home?</h2>
+      <p style="font-size:14px; color:rgba(247,242,231,0.7); margin:0 0 16px;">The baseline culture you grew up in or identify with most closely.</p>
+      <div class="field"><label class="field-label">Home Culture</label><select id="ob-home">${countryOptions(onboardingDraft.home)}</select></div>`;
+    footerHtml = `<div style="display:flex; gap:10px; width:100%"><button class="btn btn-ghost" style="flex:1" onclick="onboardingStep=1; renderOnboarding();">Back</button><button class="btn btn-brass" style="flex:2" onclick="obSaveHome();">Continue</button></div>`;
   }
   else if (onboardingStep === 3){
     body = `<div class="eyebrow" style="color:var(--brass-light);">STEP 3 / 4</div>
-      <h2 style="font-family:var(--display); font-size:24px; font-weight:900; margin:8px 0 6px;">現在ナビゲートしている文化（HOST）</h2>
-      <p style="font-size:14px; color:rgba(247,242,231,0.7); margin:0 0 16px;">あなたが現在、留学・仕事・滞在などで直面している文化を選択してください。</p>
-      <div class="field"><label class="field-label">ホスト文化</label><select id="ob-host">${countryOptions(onboardingDraft.host)}</select></div>`;
-    footerHtml = `<div style="display:flex; gap:10px; width:100%"><button class="btn btn-ghost" style="flex:1" onclick="onboardingStep=2; renderOnboarding();">戻る</button><button class="btn btn-brass" style="flex:2" onclick="obSaveHost();">次へ進む</button></div>`;
+      <h2 style="font-family:var(--display); font-size:24px; font-weight:900; margin:8px 0 6px;">Which culture are you navigating?</h2>
+      <p style="font-size:14px; color:rgba(247,242,231,0.7); margin:0 0 16px;">The host destination where you are currently studying, working, or living.</p>
+      <div class="field"><label class="field-label">Host Culture</label><select id="ob-host">${countryOptions(onboardingDraft.host)}</select></div>`;
+    footerHtml = `<div style="display:flex; gap:10px; width:100%"><button class="btn btn-ghost" style="flex:1" onclick="onboardingStep=2; renderOnboarding();">Back</button><button class="btn btn-brass" style="flex:2" onclick="obSaveHost();">Continue</button></div>`;
   }
   else if (onboardingStep === 4){
     body = `<div class="eyebrow" style="color:var(--brass-light);">STEP 4 / 4</div>
-      <h2 style="font-family:var(--display); font-size:24px; font-weight:900; margin:8px 0 18px;">設定が完了しました、${escapeHtml(onboardingDraft.name)}</h2>
+      <h2 style="font-family:var(--display); font-size:24px; font-weight:900; margin:8px 0 18px;">You're all set, ${escapeHtml(onboardingDraft.name)}</h2>
       <div class="card" style="background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.16); box-shadow:none;">
         <div class="card-row"><span class="chip" style="background:rgba(255,255,255,0.1); color:var(--parchment);">HOME</span><strong style="color:var(--parchment);">${escapeHtml(onboardingDraft.home)}</strong></div>
         <div style="height:10px;"></div>
         <div class="card-row"><span class="chip" style="background:rgba(255,255,255,0.1); color:var(--parchment);">HOST</span><strong style="color:var(--parchment);">${escapeHtml(onboardingDraft.host)}</strong></div>
       </div>
       <p style="font-size:14px; line-height:1.6; color:rgba(247,242,231,0.7); margin-top:16px;">
-        AIコーチは指定されたルートに最適化された対話を行います。「成長分析」タブから、いつでも2分間のDMISアセスメント（発達段階診断）を受けられます。
+        Your AI cultural analyst is calibrated. You can take the 2-minute developmental self-assessment from the Growth tab at any time to map your baseline sensitivity.
       </p>`;
-    footerHtml = `<button class="btn btn-brass btn-block" onclick="finishOnboarding();">CultureCompass を開始する</button>`;
+    footerHtml = `<button class="btn btn-brass btn-block" onclick="finishOnboarding();">Enter CultureCompass</button>`;
   }
   scroll.innerHTML = body; footer.innerHTML = footerHtml;
 }
@@ -562,12 +558,12 @@ async function finishOnboarding(){ STATE.profile = { name: onboardingDraft.name,
 
 function openEditProfile(){
   openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer; background:var(--parchment-dim); color:var(--text-mute);" onclick="closeModal();">✕</button>
-    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; color:var(--ink-navy);">プロファイルの編集</div>
-    <p class="screen-sub" style="margin-bottom:16px;">対象ルートを変更すると、AIコーチのナレッジも自動的に再適応されます。</p>
-    <div class="field"><label class="field-label">お名前</label><input type="text" id="ep-name" value="${escapeHtml(STATE.profile.name)}"></div>
-    <div class="field"><label class="field-label">HOME 文化</label><select id="ep-home">${countryOptions(STATE.profile.home)}</select></div>
-    <div class="field"><label class="field-label">HOST 文化</label><select id="ep-host">${countryOptions(STATE.profile.host)}</select></div>
-    <button class="btn btn-primary btn-block" onclick="saveEditProfile();">変更を保存</button>`);
+    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; color:var(--ink-navy);">Edit Profile</div>
+    <p class="screen-sub" style="margin-bottom:16px;">Updating your coordinates automatically recalculates your analyst's contextual frame.</p>
+    <div class="field"><label class="field-label">Your Name</label><input type="text" id="ep-name" value="${escapeHtml(STATE.profile.name)}"></div>
+    <div class="field"><label class="field-label">HOME Culture</label><select id="ep-home">${countryOptions(STATE.profile.home)}</select></div>
+    <div class="field"><label class="field-label">HOST Culture</label><select id="ep-host">${countryOptions(STATE.profile.host)}</select></div>
+    <button class="btn btn-primary btn-block" onclick="saveEditProfile();">Save Changes</button>`);
 }
 async function saveEditProfile(){ STATE.profile.name = document.getElementById("ep-name").value.trim() || STATE.profile.name; STATE.profile.home = document.getElementById("ep-home").value; STATE.profile.host = document.getElementById("ep-host").value; await persistUserState(); closeModal(); renderAll(); }
 
@@ -590,7 +586,7 @@ function renderHome(){
     <div class="card" onclick="switchTab('growth')" style="cursor:pointer; text-align:center;">
       <div class="dial-wrap">
         ${compassDialSVG(STATE.dmis ? STATE.dmis.stageIndex : null, {size:180})}
-        ${STATE.dmis ? `<div class="dial-stage-name" style="font-weight:900; font-size:20px; color:var(--ink-navy); margin-top:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</div><div class="dial-stage-group" style="font-weight:800; font-size:11px; color:var(--text-mute); margin-top:2px;">DMIS 発達段階</div>` : `<div class="dial-stage-name" style="font-weight:900; font-size:17px; color:var(--ink-navy); margin-top:6px;">未アセスメント</div><div class="dial-stage-group" style="color:var(--brass); font-weight:800; font-size:11px;">タップして現在のDMIS発達段階を測定</div>`}
+        ${STATE.dmis ? `<div class="dial-stage-name" style="font-weight:900; font-size:20px; color:var(--ink-navy); margin-top:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</div><div class="dial-stage-group" style="font-weight:800; font-size:11px; color:var(--text-mute); margin-top:2px;">Current DMIS Stage</div>` : `<div class="dial-stage-name" style="font-weight:900; font-size:17px; color:var(--ink-navy); margin-top:6px;">Unassessed Baseline</div><div class="dial-stage-group" style="color:var(--brass); font-weight:800; font-size:11px;">Tap to take the 2-minute developmental index quiz</div>`}
       </div>
     </div>
 
@@ -598,28 +594,28 @@ function renderHome(){
     <div class="card">
       <p style="font-size:15px; font-weight:700; line-height:1.55; margin:0 0 14px; color:var(--text-main);">${escapeHtml(challengeText)}</p>
       <button class="btn ${doneToday?'btn-ghost':'btn-brass'} btn-block" onclick="toggleChallenge('${today}')">
-        ${doneToday ? '✓ ミッション完了（また明日新しい項目が届きます）' : '完了とする'}
+        ${doneToday ? '✓ Completed (a new mission refreshes tomorrow)' : 'Mark as Done'}
       </button>
     </div>
 
     <div class="section-label">ANALYTICS</div>
     <div class="stat-grid">
-      <div class="stat-box"><div class="stat-num">${STATE.journal.length}</div><span class="stat-label">ノート件数</span></div>
-      <div class="stat-box"><div class="stat-num">${STATE.tracker.length}</div><span class="stat-label">ログ件数</span></div>
-      <div class="stat-box"><div class="stat-num">${STATE.challenges.streak}</div><span class="stat-label">継続ストリーク ${STATE.challenges.streak>0?'🔥':''}</span></div>
-      <div class="stat-box"><div class="stat-num">${Object.keys(STATE.challenges.completedDates).length}</div><span class="stat-label">達成ミッション</span></div>
+      <div class="stat-box"><div class="stat-num">${STATE.journal.length}</div><span class="stat-label">Notes Logged</span></div>
+      <div class="stat-box"><div class="stat-num">${STATE.tracker.length}</div><span class="stat-label">Check-ins</span></div>
+      <div class="stat-box"><div class="stat-num">${STATE.challenges.streak}</div><span class="stat-label">Day Streak ${STATE.challenges.streak>0?'🔥':''}</span></div>
+      <div class="stat-box"><div class="stat-num">${Object.keys(STATE.challenges.completedDates).length}</div><span class="stat-label">Total Cleared</span></div>
     </div>
 
     <div class="section-label">QUICK ACCESS</div>
     <div class="card" style="padding:8px 12px;">
       <div class="list-item" onclick="switchTab('coach')" style="cursor:pointer;">
-        <div class="li-icon" style="background:#e8f0fe;">💬</div><div class="li-body"><div class="li-title">AIコーチに相談する</div><div class="li-sub">日常の違和感や疑問を構造的に分析します</div></div>${icon('chevron',16)}
+        <div class="li-icon" style="background:#e8f0fe;">💬</div><div class="li-body"><div class="li-title">Consult AI Cultural Coach</div><div class="li-sub">Deconstruct subtle friction points structurally</div></div>${icon('chevron',16)}
       </div>
       <div class="list-item" onclick="switchTab('track')" style="cursor:pointer;">
-        <div class="li-icon" style="background:#e6f4ea;">📈</div><div class="li-body"><div class="li-title">現在のステートを記録</div><div class="li-sub">適応曲線の波を長期ログに残します</div></div>${icon('chevron',16)}
+        <div class="li-icon" style="background:#e6f4ea;">📈</div><div class="li-body"><div class="li-title">Log Current State</div><div class="li-sub">Map everyday psychological adaptation fluctuations</div></div>${icon('chevron',16)}
       </div>
       <div class="list-item" onclick="switchTab('journal')" style="cursor:pointer;">
-        <div class="li-icon" style="background:#fef7e0;">📝</div><div class="li-body"><div class="li-title">${lastJournal ? 'リフレクションノートを継続' : '最初のノートを作成'}</div><div class="li-sub">${lastJournal ? escapeHtml(lastJournal.text.slice(0,35))+'…' : '問いに答えることでメタ認知を高めます'}</div></div>${icon('chevron',16)}
+        <div class="li-icon" style="background:#fef7e0;">📝</div><div class="li-body"><div class="li-title">${lastJournal ? 'Continue Reflection Journal' : 'Write First Entry'}</div><div class="li-sub">${lastJournal ? escapeHtml(lastJournal.text.slice(0,35))+'…' : 'Answer structured prompts to build metacognition'}</div></div>${icon('chevron',16)}
       </div>
     </div>`;
 }
@@ -632,16 +628,16 @@ async function toggleChallenge(dateStr){
 }
 
 /* ================================ COACH ==================================== */
-const QUICK_PROMPTS = ["現地の人が直接的な視線を避ける傾向があるのはなぜ？", "現地でのすれ違いや議論に備えるための思考フレームは？", "この文化における適切なスモールトークの境界線は？", "適応期の疲労（ホームシック）との向き合い方は？"];
+const QUICK_PROMPTS = ["Why might locals avoid direct eye contact during conversations?", "How can I structurally prepare for a disagreement here?", "What constitutes appropriate small talk boundaries in this culture?", "How should I navigate transitional fatigue or homesickness safely?"];
 
 function renderCoach(){
   const el = document.getElementById("screen-coach"); const p = STATE.profile;
-  el.innerHTML = `<div style="margin-top:8px;"><div class="eyebrow">CULTURAL INTERACTION ANALYST</div><div class="screen-title" style="margin-top:2px; font-size:24px;">AI カウンセリング</div><div class="screen-sub"><span class="chip brass">${escapeHtml(p.home)} ➔ ${escapeHtml(p.host)}</span> ${STATE.dmis ? `<span class="chip sage" style="margin-left:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</span>` : ""}</div></div>
+  el.innerHTML = `<div style="margin-top:8px;"><div class="eyebrow">CULTURAL INTERACTION ANALYST</div><div class="screen-title" style="margin-top:2px; font-size:24px;">AI Deconstruction</div><div class="screen-sub"><span class="chip brass">${escapeHtml(p.home)} ➔ ${escapeHtml(p.host)}</span> ${STATE.dmis ? `<span class="chip sage" style="margin-left:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</span>` : ""}</div></div>
     <div class="chat-scroll" id="chatScroll" style="display:flex; flex-direction:column; gap:10px; padding-bottom:8px; margin-top:12px;">
-      ${STATE.coachHistory.length === 0 ? `<div class="empty-state" style="text-align:center; padding:34px 14px;"><span class="glyph" style="font-size:32px;">💬</span><div class="msg" style="font-weight:800; margin-top:8px; color:var(--text-mute);">日常で生じた違和感や「なぜ？」と思う出来事をフラットに分析します。</div></div><div style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;">${QUICK_PROMPTS.map(q=>`<button class="btn btn-ghost" style="font-size:14px; text-align:left; padding:14px;" onclick="sendCoachMessage(${JSON.stringify(q)})">${escapeHtml(q)}</button>`).join("")}</div>` : STATE.coachHistory.map(m => `<div class="bubble ${m.role==='user'?'user':'ai'}">${formatAiText(m.text)}</div>`).join("")}
+      ${STATE.coachHistory.length === 0 ? `<div class="empty-state" style="text-align:center; padding:34px 14px;"><span class="glyph" style="font-size:32px;">💬</span><div class="msg" style="font-weight:800; margin-top:8px; color:var(--text-mute);">Describe a confusing moment or behavior to analyze its implicit cultural logic.</div></div><div style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;">${QUICK_PROMPTS.map(q=>`<button class="btn btn-ghost" style="font-size:14px; text-align:left; padding:14px;" onclick="sendCoachMessage(${JSON.stringify(q)})">${escapeHtml(q)}</button>`).join("")}</div>` : STATE.coachHistory.map(m => `<div class="bubble ${m.role==='user'?'user':'ai'}">${formatAiText(m.text)}</div>`).join("")}
     </div>
     <div class="chat-inputbar" style="position:sticky; bottom:0; display:flex; gap:8px; background:var(--parchment); padding-top:8px; align-items: center;">
-      <textarea id="coachInput" placeholder="出来事や疑問を入力してください…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCoachMessageFromInput();}"></textarea>
+      <textarea id="coachInput" placeholder="Type what's on your mind…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCoachMessageFromInput();}"></textarea>
       <button class="chat-send" style="background:var(--brass); border:none; border-radius:50%; width:46px; height:46px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex: 0 0 auto;" onclick="sendCoachMessageFromInput();">${icon('send',18)}</button>
     </div>`; scrollChatToBottom();
 }
@@ -650,16 +646,16 @@ function formatAiText(t){ let s = escapeHtml(t); s = s.replace(/\*\*(.+?)\*\*/g,
 function sendCoachMessageFromInput(){ const ta = document.getElementById("coachInput"); const text = ta.value.trim(); if (!text) return; ta.value = ""; sendCoachMessage(text); }
 async function sendCoachMessage(text){
   STATE.coachHistory.push({ role:"user", text }); renderCoach(); await storeSet("coach-history", STATE.coachHistory);
-  const scroll = document.getElementById("chatScroll"); const typingEl = document.createElement("div"); typingEl.className = "bubble ai"; typingEl.id = "typingBubble"; typingEl.textContent = "分析中..."; scroll.appendChild(typingEl); scrollChatToBottom();
+  const scroll = document.getElementById("chatScroll"); const typingEl = document.createElement("div"); typingEl.className = "bubble ai"; typingEl.id = "typingBubble"; typingEl.textContent = "Analyzing context..."; scroll.appendChild(typingEl); scrollChatToBottom();
   const p = STATE.profile; const stageInfo = STATE.dmis ? `The user's self-assessed DMIS stage is "${DMIS_STAGES[STATE.dmis.stageIndex].name}" (${DMIS_STAGES[STATE.dmis.stageIndex].group}).` : "The user hasn't taken the DMIS self-assessment yet.";
-  const systemPrompt = `You are an expert intercultural coach inside "CultureCompass". Professional, warm, insightful, objective, and supportive. Use polite Japanese (です/ます). Analyze communication style gaps (direct/indirect, high/low context) between ${p.home} and ${p.host}. Framed with ethnorelative logic. Under 150 words.`;
+  const systemPrompt = `You are an expert intercultural analyst inside "CultureCompass". Professional, warm, clear, and highly objective. Respond in natural English. Analyze subtle interaction style gaps (high/low context, direct/indirect) between ${p.home} and ${p.host}. Framed strictly via ethnorelative logic. Keep paragraphs short and concise, under 140 words total.`;
   const apiMessages = STATE.coachHistory.slice(-16).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, system: systemPrompt, messages: apiMessages }) });
-    const data = await response.json(); const reply = (data.content || []).map(b => b.text || "").join("\n").trim() || "応答の処理にエラーが発生しました。再度入力をお願いいたします。";
+    const data = await response.json(); const reply = (data.content || []).map(b => b.text || "").join("\n").trim() || "I couldn't process that response fully. Could you try rephrasing?";
     STATE.coachHistory.push({ role:"assistant", text: reply });
   } catch(e) {
-    STATE.coachHistory.push({ role:"assistant", text: "ネットワークエラーが発生しました。接続状況を確認し再度お試しください。" });
+    STATE.coachHistory.push({ role:"assistant", text: "Connection error detected. Please verify your data link and try again." });
   }
   await storeSet("coach-history", STATE.coachHistory); renderCoach();
 }
@@ -668,14 +664,14 @@ async function sendCoachMessage(text){
 let trackSelectedMood = null;
 function renderTrack(){
   const el = document.getElementById("screen-track"); const today = todayStr(); const already = STATE.tracker.find(e => e.date === today); const phase = classifyPhase(STATE.tracker); const values = STATE.tracker.slice(-14).map(e=>e.mood);
-  el.innerHTML = `<div class="eyebrow" style="margin-top:8px;">ADJUSTMENT CURVE LOG</div><div class="screen-title" style="margin-top:2px; font-size:24px;">適応プロセスの記録</div><div class="screen-sub">心理的な波の変動は、未知の環境モデルへ心が適応しようとする正常な推移です。</div>
-    <div class="card"><div><span class="chip ${phase.name.includes('Frustration')?'rust':phase.name.includes('Honeymoon')?'brass':'sage'}">${phase.name}</span></div><p style="font-size:13.5px; font-weight:700; line-height:1.55; color:var(--text-mute); margin:10px 0 12px;">${phase.note}</p>${values.length ? sparkline(values) : `<div class="empty-state" style="text-align:center; padding:14px 0;"><span class="msg" style="font-weight:700; color:var(--text-mute);">毎日のステートを記録することで、ここに適応曲線トレンドがマッピングされます。</span></div>`}</div>
-    <div class="section-label">${already ? "本日のチェックイン履歴" : "本日の精神的コンディション"}</div>
+  el.innerHTML = `<div class="eyebrow" style="margin-top:8px;">ADJUSTMENT CURVE TRACKER</div><div class="screen-title" style="margin-top:2px; font-size:24px;">Psychological States</div><div class="screen-sub">Dips and rises along the adaptation curve reflect active mental integration, not personal failure.</div>
+    <div class="card"><div><span class="chip ${phase.name.includes('Frustration')?'rust':phase.name.includes('Honeymoon')?'brass':'sage'}">${phase.name}</span></div><p style="font-size:13.5px; font-weight:700; line-height:1.55; color:var(--text-mute); margin:10px 0 12px;">${phase.note}</p>${values.length ? sparkline(values) : `<div class="empty-state" style="text-align:center; padding:14px 0;"><span class="msg" style="font-weight:700; color:var(--text-mute);">Your long-term cultural adaptation line will plot here as you track your state.</span></div>`}</div>
+    <div class="section-label">${already ? "Today's Check-in" : "How is your adaptation energy today?"}</div>
     <div class="card"><div class="mood-row" style="display:flex; gap:10px; justify-content:space-between; margin:8px 0 6px;">${MOODS.map(m => `<button class="mood-btn ${((already?already.mood:trackSelectedMood)===m.v)?'selected':''}" style="flex:1; aspect-ratio:1; border-radius:18px; border:2px solid var(--line); background:#fff; font-size:24px; cursor:pointer; transition: all 0.1s;" onclick="pickMood(${m.v})" ${already?'disabled':''}>${m.e}</button>`).join("")}</div>
-      <div style="text-align:center; font-size:13px; font-weight:800; color:var(--text-mute); margin-bottom:14px;">${already ? MOODS.find(m=>m.v===already.mood).label : (trackSelectedMood ? MOODS.find(m=>m.v===trackSelectedMood).label : "現在の状態に最も近い指標を選択してください")}</div>
-      ${already ? `${already.note ? `<p style="font-size:14px; font-weight:600; color:var(--text-main); background:var(--parchment-dim); padding:12px; border-radius:16px; margin:0;">${escapeHtml(already.note)}</p>` : ""}<div style="text-align:center; margin-top:8px;"><span class="chip">✓ 本日のログは記録済みです</span></div>` : `<textarea id="trackNote" placeholder="特記事項があれば入力してください（任意・空欄可）" rows="2"></textarea><div style="height:12px;"></div><button class="btn btn-brass btn-block" ${trackSelectedMood?'':'disabled'} onclick="saveCheckIn();">ステートを記録</button>`}</div>
-    <div class="section-label">LOG HISTORY</div>
-    ${STATE.tracker.length === 0 ? `<div class="empty-state"><span class="glyph">🧭</span><div class="msg">記録されたログは時系列データとしてここに蓄積されます。</div></div>` : `<div class="card" style="padding:8px 12px;">${STATE.tracker.slice().reverse().slice(0,20).map(e => `<div class="list-item"><div class="li-icon">${MOODS.find(m=>m.v===e.mood).e}</div><div class="li-body"><div class="li-title">${fmtDate(e.date)} ➔ ${MOODS.find(m=>m.v===e.mood).label}</div>${e.note ? `<div class="li-sub">${escapeHtml(e.note)}</div>` : ""}</div></div>`).join("")}</div>`}`;
+      <div style="text-align:center; font-size:13px; font-weight:800; color:var(--text-mute); margin-bottom:14px;">${already ? MOODS.find(m=>m.v===already.mood).label : (trackSelectedMood ? MOODS.find(m=>m.v===trackSelectedMood).label : "Select an index mapping closest to your state")}</div>
+      ${already ? `${already.note ? `<p style="font-size:14px; font-weight:600; color:var(--text-main); background:var(--parchment-dim); padding:12px; border-radius:16px; margin:0;">${escapeHtml(already.note)}</p>` : ""}<div style="text-align:center; margin-top:8px;"><span class="chip">✓ Logged for today</span></div>` : `<textarea id="trackNote" placeholder="Optional notes — what specific interaction happened today?" rows="2"></textarea><div style="height:12px;"></div><button class="btn btn-brass btn-block" ${trackSelectedMood?'':'disabled'} onclick="saveCheckIn();">Save State</button>`}</div>
+    <div class="section-label">TRACKING HISTORY</div>
+    ${STATE.tracker.length === 0 ? `<div class="empty-state"><span class="glyph">🧭</span><div class="msg">Consecutive logs build an accurate blueprint of your adaptation phases over time.</div></div>` : `<div class="card" style="padding:8px 12px;">${STATE.tracker.slice().reverse().slice(0,20).map(e => `<div class="list-item"><div class="li-icon">${MOODS.find(m=>m.v===e.mood).e}</div><div class="li-body"><div class="li-title">${fmtDate(e.date)} ➔ ${MOODS.find(m=>m.v===e.mood).label}</div>${e.note ? `<div class="li-sub">${escapeHtml(e.note)}</div>` : ""}</div></div>`).join("")}</div>`}`;
 }
 function pickMood(v){ trackSelectedMood = v; renderTrack(); }
 async function saveCheckIn(){ const note = document.getElementById("trackNote").value.trim(); STATE.tracker.push({ id:uid(), date: todayStr(), mood: trackSelectedMood, note }); trackSelectedMood = null; await storeSet("tracker-entries", STATE.tracker); renderTrack(); renderHome(); renderGrowth(); }
@@ -683,17 +679,17 @@ async function saveCheckIn(){ const note = document.getElementById("trackNote").
 /* ================================ JOURNAL =================================== */
 function renderJournal(){
   const el = document.getElementById("screen-journal");
-  el.innerHTML = `<div class="card-row" style="margin-top:8px;"><div><div class="eyebrow">METAGOGNITIVE REFLECTION</div><div class="screen-title" style="margin-top:2px; font-size:24px;">気づきノート</div></div></div><div class="screen-sub">暗記ではなく内省を。出来事を記述し、自身の文化的レンズをメタ認知するエリアです。</div>
-    <button class="btn btn-primary btn-block" onclick="openNewEntry();" style="margin-bottom:18px; display:flex; align-items:center; justify-content:center; gap:8px;">${icon('plus',18)} 新しい内省ログを作成</button>
-    ${STATE.journal.length === 0 ? `<div class="empty-state" style="text-align:center; padding:34px 14px;"><span class="glyph" style="font-size:36px;">📓</span><div class="msg" style="font-weight:700; margin-top:8px;">内省のテーマを選択し、あなたの思考プロセスを客観的に記述してみましょう。</div></div>` : `<div class="section-label">REFLECTIONS</div><div class="card" style="padding:8px 12px;">${STATE.journal.slice().reverse().map(j => `<div class="list-item" onclick="viewEntry('${j.id}')" style="cursor:pointer;"><div class="li-icon">📝</div><div class="li-body"><div class="li-title">${fmtDate(j.date)}</div><div class="li-sub">${escapeHtml(j.text.slice(0,35))}${j.text.length>35?'…':''}</div></div>${icon('chevron',16)}</div>`).join("")}</div>`}`;
+  el.innerHTML = `<div class="card-row" style="margin-top:8px;"><div><div class="eyebrow">METAGOGNITIVE REFLECTION</div><div class="screen-title" style="margin-top:2px; font-size:24px;">Notice, Don't Just Cope</div></div></div><div class="screen-sub">Reflection over rote memorization. A spaces to untangle confusing signals and map your own cultural lens.</div>
+    <button class="btn btn-primary btn-block" onclick="openNewEntry();" style="margin-bottom:18px; display:flex; align-items:center; justify-content:center; gap:8px;">${icon('plus',18)} Create New Entry</button>
+    ${STATE.journal.length === 0 ? `<div class="empty-state" style="text-align:center; padding:34px 14px;"><span class="glyph" style="font-size:36px;">📓</span><div class="msg" style="font-weight:700; margin-top:8px;">Your first entry takes two minutes. Choose a reflection prompt to start.</div></div>` : `<div class="section-label">REFLECTIONS LOG</div><div class="card" style="padding:8px 12px;">${STATE.journal.slice().reverse().map(j => `<div class="list-item" onclick="viewEntry('${j.id}')" style="cursor:pointer;"><div class="li-icon">📝</div><div class="li-body"><div class="li-title">${fmtDate(j.date)}</div><div class="li-sub">${escapeHtml(j.text.slice(0,35))}${j.text.length>35?'…':''}</div></div>${icon('chevron',16)}</div>`).join("")}</div>`}`;
 }
 function openNewEntry(){
   const promptIdx = Math.floor(Math.random()*JOURNAL_PROMPTS.length);
-  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer; background:var(--parchment-dim); color:var(--text-mute);" onclick="closeModal();">✕</button>
-    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:20px;">内省のテーマ</div>
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:16px; right:16px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer; background:var(--parchment-dim); color:var(--text-mute);" onclick="closeModal();">✕</button>
+    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:20px;">Reflection Prompt</div>
     <div class="card" style="background:var(--parchment-dim); border:none; margin:12px 0 16px; box-shadow:none;"><p id="entryPromptText" style="font-size:14.5px; font-weight:700; margin:0; line-height:1.6; color:var(--text-main);">${escapeHtml(JOURNAL_PROMPTS[promptIdx])}</p>
-      <button class="btn btn-ghost" style="margin-top:12px; font-size:12px; padding:6px 12px; box-shadow:none;" onclick="shufflePrompt();">🎲 別の問いに変更する</button></div>
-    <textarea id="entryText" rows="6" placeholder="評価や正解はありません。自身の内面に生じた変化を客観的に記述してください。"></textarea><div style="height:14px;"></div><button class="btn btn-brass btn-block" onclick="saveEntry();">ノートに保存</button>`);
+      <button class="btn btn-ghost" style="margin-top:12px; font-size:12px; padding:6px 12px; box-shadow:none;" onclick="shufflePrompt();">🎲 Shuffle New Prompt</button></div>
+    <textarea id="entryText" rows="6" placeholder="Write freely. There are no graded metrics here — just focus on analyzing your framework."></textarea><div style="height:14px;"></div><button class="btn btn-brass btn-block" onclick="saveEntry();">Save Entry</button>`);
   document.getElementById("modalSheet").dataset.promptIdx = promptIdx;
 }
 function shufflePrompt(){ const sheet = document.getElementById("modalSheet"); let idx = Math.floor(Math.random()*JOURNAL_PROMPTS.length); sheet.dataset.promptIdx = idx; document.getElementById("entryPromptText").textContent = JOURNAL_PROMPTS[idx]; }
@@ -703,31 +699,31 @@ function viewEntry(id){
   openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer; background:var(--parchment-dim); color:var(--text-mute);" onclick="closeModal();">✕</button>
     <div class="eyebrow">${fmtDateLong(j.date)}</div><div class="sheet-title" style="font-size:16px; margin-top:6px; font-weight:800; line-height:1.4;">${escapeHtml(j.prompt)}</div>
     <p style="font-size:14.5px; font-weight:600; line-height:1.65; white-space:pre-wrap; margin-top:14px; color:var(--text-main);">${escapeHtml(j.text)}</p>
-    <button class="btn btn-ghost btn-block" style="margin-top:18px; color:var(--rust); border-color:var(--rust); box-shadow:none;" onclick="deleteEntry('${j.id}');">この記録を削除する</button>`);
+    <button class="btn btn-ghost btn-block" style="margin-top:18px; color:var(--rust); border-color:var(--rust); box-shadow:none;" onclick="deleteEntry('${j.id}');">Delete This Entry</button>`);
 }
 async function deleteEntry(id){ STATE.journal = STATE.journal.filter(e => e.id !== id); await storeSet("journal-entries", STATE.journal); closeModal(); renderJournal(); renderHome(); renderGrowth(); }
 
 /* ================================ GROWTH =================================== */
 function renderGrowth(){
   const el = document.getElementById("screen-growth"); const today = todayStr(); const challengeIdx = dayOfYear(new Date()) % CHALLENGES.length; const daysActive = STATE.profile ? Math.max(1, Math.round((new Date(today) - new Date(STATE.profile.createdAt))/86400000)+1) : 1; const values = STATE.tracker.slice(-14).map(e=>e.mood);
-  el.innerHTML = `<div class="eyebrow" style="margin-top:8px;">DMIS EVALUATION MODEL</div><div class="screen-title" style="margin-top:2px; font-size:24px;">発達段階の可視化</div><div class="screen-sub">ミルン・ベネットのDMISモデルに基づく異文化感受性の発達指標です。</div>
+  el.innerHTML = `<div class="eyebrow" style="margin-top:8px;">DMIS ASSESSMENT SCHEMA</div><div class="screen-title" style="margin-top:2px; font-size:24px;">Development Visible</div><div class="screen-sub">Tracking orientation changes across Milton Bennett's Developmental Model of Intercultural Sensitivity.</div>
     <div class="card"><div class="dial-wrap">${compassDialSVG(STATE.dmis ? STATE.dmis.stageIndex : null, {size:190})}
-        ${STATE.dmis ? `<div class="dial-stage-name" style="font-weight:900; font-size:20px; color:var(--ink-navy); margin-top:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</div><div class="dial-stage-group" style="font-weight:800; font-size:12px; color:var(--brass); margin-top:2px;">指標スコア: ${STATE.dmis.score} / 60</div><p style="font-size:13.5px; font-weight:700; color:var(--text-mute); line-height:1.6; margin:12px 4px 14px;">${DMIS_STAGES[STATE.dmis.stageIndex].blurb}</p>` : `<div class="dial-stage-name" style="font-weight:900; font-size:17px; margin-top:6px;">感受性レベル未測定</div><div class="dial-stage-group" style="color:var(--brass); font-weight:800; font-size:11px;">自己アセスメントを行い、現在の発達段階をマッピング</div><div style="height:12px;"></div>`}</div>
-      <button class="btn ${STATE.dmis?'btn-ghost':'btn-brass'} btn-block" onclick="startQuiz();">${STATE.dmis ? 'アセスメントを再測定する' : '自己アセスメントを実施'}</button></div>
+        ${STATE.dmis ? `<div class="dial-stage-name" style="font-weight:900; font-size:20px; color:var(--ink-navy); margin-top:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</div><div class="dial-stage-group" style="font-weight:800; font-size:12px; color:var(--brass); margin-top:2px;">Metric Score: ${STATE.dmis.score} / 60 (Stage: ${DMIS_STAGES[STATE.dmis.stageIndex].group})</div><p style="font-size:13.5px; font-weight:700; color:var(--text-mute); line-height:1.6; margin:10px 4px 14px;">${DMIS_STAGES[STATE.dmis.stageIndex].blurb}</p>` : `<div class="dial-stage-name" style="font-weight:900; font-size:17px; margin-top:6px;">Sensitivity Level Unmeasured</div><div class="dial-stage-group" style="color:var(--brass); font-weight:800; font-size:11px;">Complete the core self-assessment to map your developmental frame.</div><div style="height:12px;"></div>`}</div>
+      <button class="btn ${STATE.dmis?'btn-ghost':'btn-brass'} btn-block" onclick="startQuiz();">${STATE.dmis ? 'Retake Sensitivity Assessment' : 'Evaluate Intercultural Stage'}</button></div>
     <div class="section-label">LEVEL METRICS</div>
     <div class="stat-grid">
-      <div class="stat-box"><div class="stat-num">${daysActive}</div><span class="stat-label">経過日数</span></div>
-      <div class="stat-box"><div class="stat-num">${STATE.challenges.streak}</div><span class="stat-label">連続ストリーク</span></div>
-      <div class="stat-box"><div class="stat-num">${STATE.journal.length}</div><span class="stat-label">累積内省ログ</span></div>
-      <div class="stat-box"><div class="stat-num">${Object.keys(STATE.challenges.completedDates).length}</div><span class="stat-label">完了ミッション</span></div>
+      <div class="stat-box"><div class="stat-num">${daysActive}</div><span class="stat-label">Days Active</span></div>
+      <div class="stat-box"><div class="stat-num">${STATE.challenges.streak}</div><span class="stat-label">Current Streak</span></div>
+      <div class="stat-box"><div class="stat-num">${STATE.journal.length}</div><span class="stat-label">Total Notes</span></div>
+      <div class="stat-box"><div class="stat-num">${Object.keys(STATE.challenges.completedDates).length}</div><span class="stat-label">Cleared Tasks</span></div>
     </div>
     ${values.length ? `<div class="section-label">MOOD TREND LINE</div><div class="card">${sparkline(values)}</div>` : ""}
-    <div class="section-label">CHALLENGE POOL (デイリーでランダムに選択されます)</div>
-    <div class="card" style="padding:8px 12px;">${CHALLENGES.map((c,i) => { const isToday = i === challengeIdx; const doneToday = isToday && !!STATE.challenges.completedDates[today]; return `<div class="list-item"><div class="li-icon" style="font-size:14px;">${doneToday ? '✅' : (isToday ? '📍' : '•')}</div><div class="li-body"><div class="li-title" style="${isToday?'font-weight:900; color:var(--ink-navy);':'color:var(--text-mute); font-weight:600;'}">${escapeHtml(c)}</div>${isToday ? `<div class="li-sub" style="color:var(--brass); font-weight:900;">本日のミッション</div>` : ""}</div></div>`; }).join("")}</div>
+    <div class="section-label">CHALLENGE POOL (Randomly selected daily)</div>
+    <div class="card" style="padding:8px 12px;">${CHALLENGES.map((c,i) => { const isToday = i === challengeIdx; const doneToday = isToday && !!STATE.challenges.completedDates[today]; return `<div class="list-item"><div class="li-icon" style="font-size:14px;">${doneToday ? '✅' : (isToday ? '📍' : '•')}</div><div class="li-body"><div class="li-title" style="${isToday?'font-weight:900; color:var(--ink-navy);':'color:var(--text-mute); font-weight:600;'}">${escapeHtml(c)}</div>${isToday ? `<div class="li-sub" style="color:var(--brass); font-weight:900;">Active Today</div>` : ""}</div></div>`; }).join("")}</div>
     <div class="section-label">UTILITIES</div>
     <div class="card" style="padding:8px 12px;">
-      <div class="list-item" onclick="openTranslate();" style="cursor:pointer;"><div class="li-icon">🗣️</div><div class="li-body"><div class="li-title">ワンタップ翻訳ツール</div><div class="li-sub">日常の状況に即した簡易翻訳機能</div></div>${icon('chevron',16)}</div>
-      <div class="list-item" onclick="openEditProfile();" style="cursor:pointer;"><div class="li-icon">⚙️</div><div class="li-body"><div class="li-title">対象文化の変更</div><div class="li-sub">現在値：${escapeHtml(STATE.profile.home)} ➔ ${escapeHtml(STATE.profile.host)}</div></div>${icon('chevron',16)}</div>
+      <div class="list-item" onclick="openTranslate();" style="cursor:pointer;"><div class="li-icon">🗣️</div><div class="li-body"><div class="li-title">One-Tap Translation Tool</div><div class="li-sub">Rapid situational phrase alignment utility</div></div>${icon('chevron',16)}</div>
+      <div class="list-item" onclick="openEditProfile();" style="cursor:pointer;"><div class="li-icon">⚙️</div><div class="li-body"><div class="li-title">Modify Target Route</div><div class="li-sub">Current setup: ${escapeHtml(STATE.profile.home)} ➔ ${escapeHtml(STATE.profile.host)}</div></div>${icon('chevron',16)}</div>
     </div>`;
 }
 
@@ -736,39 +732,39 @@ function startQuiz(){ quizAnswers = new Array(DMIS_QUESTIONS.length).fill(null);
 function renderQuiz(){
   const total = DMIS_QUESTIONS.length; const pct = Math.round(((quizIndex)/total)*100);
   openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer; background:var(--parchment-dim); color:var(--text-mute);" onclick="closeModal();">✕</button>
-    <div class="eyebrow">DMIS アセスメント · ${quizIndex+1} / ${total}</div><div class="quiz-progress" style="margin-top:12px;"><div class="quiz-progress-fill" style="width:${pct}%;"></div></div>
+    <div class="eyebrow">DMIS Evaluation · ${quizIndex+1} / ${total}</div><div class="quiz-progress" style="margin-top:12px;"><div class="quiz-progress-fill" style="width:${pct}%;"></div></div>
     <p style="font-size:18px; line-height:1.5; font-family:var(--display); font-weight:800; margin:4px 0 18px; color:var(--ink-navy);">${escapeHtml(DMIS_QUESTIONS[quizIndex])}</p>
-    ${["全く当てはまらない","あまり当てはまらない","どちらとも言えない","概ね当てはまる","非常に当てはまる"].map((label,i)=>`<button class="quiz-opt" style="display:block; width:100%; text-align:left; background:#fff; border:2px solid var(--line); border-radius:16px; padding:14px; margin-bottom:10px; font-size:14.5px; font-weight:700; cursor:pointer;" onclick="answerQuiz(${i+1})">${label}</button>`).join("")}`);
+    ${["Strongly Disagree","Disagree","Neutral","Agree","Strongly Agree"].map((label,i)=>`<button class="quiz-opt" style="display:block; width:100%; text-align:left; background:#fff; border:2px solid var(--line); border-radius:16px; padding:14px; margin-bottom:10px; font-size:14.5px; font-weight:700; cursor:pointer;" onclick="answerQuiz(${i+1})">${label}</button>`).join("")}`);
 }
 function answerQuiz(val){ quizAnswers[quizIndex] = val; if (quizIndex < DMIS_QUESTIONS.length - 1){ quizIndex++; renderQuiz(); } else { finishQuiz(); } }
 async function finishQuiz(){
   const total = quizAnswers.reduce((a,b)=>a+b,0); const stageIndex = scoreToStageIndex(total); STATE.dmis = { stageIndex, score: total, date: todayStr() }; await persistUserState(); const stage = DMIS_STAGES[stageIndex];
   openModal(`<div class="sheet-handle"></div>
     <div style="text-align:center; padding-top:6px;">${compassDialSVG(stageIndex, {size:190})}
-      <div class="dial-stage-group" style="font-weight:800; color:var(--brass); font-size:12px; margin-top:12px;">診断カテゴリー：${stage.group}</div>
+      <div class="dial-stage-group" style="font-weight:800; color:var(--brass); font-size:12px; margin-top:12px;">Evaluation Cluster: ${stage.group}</div>
       <div class="dial-stage-name" style="font-size:22px; font-weight:900; color:var(--ink-navy); margin-top:2px;">${stage.name}</div>
       <p style="font-size:14px; font-weight:700; color:var(--text-mute); line-height:1.6; margin:12px 4px 20px;">${stage.blurb}</p>
-      <button class="btn btn-primary btn-block" onclick="closeModal(); renderGrowth(); renderHome(); renderCoach(); switchTab('growth');">マイページで確認</button>
+      <button class="btn btn-primary btn-block" onclick="closeModal(); renderGrowth(); renderHome(); renderCoach(); switchTab('growth');">Confirm Mapping</button>
     </div>`);
 }
 
 const TRANSLATE_LANGS = ["English","Japanese","Spanish","French","German","Mandarin Chinese","Korean","Portuguese","Arabic","Hindi","Vietnamese","Thai","Russian","Italian"];
 function openTranslate(){
   openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer; background:var(--parchment-dim); color:var(--text-mute);" onclick="closeModal();">✕</button>
-    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px;">簡易翻訳ツール</div><p class="screen-sub" style="margin-bottom:16px;">日常で必要なフレーズを素早く翻訳します。</p>
-    <div class="field"><label class="field-label">翻訳対象テキスト</label><textarea id="trText" rows="3" placeholder="フレーズを入力してください…"></textarea></div>
-    <div class="field"><label class="field-label">変換言語</label><select id="trLang">${TRANSLATE_LANGS.map(l=>`<option value="${l}">${l}</option>`).join("")}</select></div>
-    <button class="btn btn-brass btn-block" onclick="runTranslate();">翻訳を実行</button><div id="trResult"></div>`);
+    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px;">Quick Translate</div><p class="screen-sub" style="margin-bottom:16px;">Translate phrases rapidly for everyday local navigation scenarios.</p>
+    <div class="field"><label class="field-label">Source Text</label><textarea id="trText" rows="3" placeholder="Type a phrase here…"></textarea></div>
+    <div class="field"><label class="field-label">Target Language</label><select id="trLang">${TRANSLATE_LANGS.map(l=>`<option value="${l}">${l}</option>`).join("")}</select></div>
+    <button class="btn btn-brass btn-block" onclick="runTranslate();">Execute Translation</button><div id="trResult"></div>`);
 }
 async function runTranslate(){
   const text = document.getElementById("trText").value.trim(); const lang = document.getElementById("trLang").value; const resultEl = document.getElementById("trResult"); if (!text){ return; }
-  resultEl.innerHTML = `<p style="margin-top:14px; font-size:13.5px; font-weight:700; color:var(--text-mute);">翻訳中...</p>`;
+  resultEl.innerHTML = `<p style="margin-top:14px; font-size:13.5px; font-weight:700; color:var(--text-mute);">Processing...</p>`;
   try{
     const response = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 300, system: `You are a translation tool. Translate the user's text into ${lang}. Respond with ONLY the translation and nothing else — no notes, no quotation marks, no explanation.`, messages: [{ role:"user", content: text }] }) });
     const data = await response.json(); const out = (data.content||[]).map(b=>b.text||"").join("").trim();
-    resultEl.innerHTML = `<div class="card" style="background:var(--parchment-dim); border:none; margin-top:14px; box-shadow:none;"><div class="eyebrow" style="margin-bottom:6px;">${lang.toUpperCase()}</div><p style="font-size:15.5px; font-weight:800; margin:0; line-height:1.55; color:var(--ink-navy);">${escapeHtml(out || "翻訳処理に失敗しました。")}</p></div>`;
+    resultEl.innerHTML = `<div class="card" style="background:var(--parchment-dim); border:none; margin-top:14px; box-shadow:none;"><div class="eyebrow" style="margin-bottom:6px;">${lang.toUpperCase()}</div><p style="font-size:15.5px; font-weight:800; margin:0; line-height:1.55; color:var(--ink-navy);">${escapeHtml(out || "Translation string mapping failed.")}</p></div>`;
   }catch(e){
-    resultEl.innerHTML = `<p style="margin-top:14px; font-size:13.5px; font-weight:700; color:var(--rust);">通信に失敗しました。再度お試しください。</p>`;
+    resultEl.innerHTML = `<p style="margin-top:14px; font-size:13.5px; font-weight:700; color:var(--rust);">Data error. Please verify network access and try again.</p>`;
   }
 }
 
