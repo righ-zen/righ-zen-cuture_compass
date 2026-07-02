@@ -30,15 +30,12 @@
 body{
     font-family:var(--body);
     color:var(--text-main);
-    background:
-      radial-gradient(circle at 20% 15%, rgba(200,155,60,0.10), transparent 45%),
-      radial-gradient(circle at 85% 80%, rgba(110,139,116,0.12), transparent 50%),
-      var(--midnight);
+    background: var(--midnight); /* 外側の余白は暗い色にしておきます */
     min-height:100vh;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding: 40px 0 0 0; /* 上に40pxだけ余白を空け、左右下は0にします */
+    padding: 0;
     overflow-x:hidden;
   }
 
@@ -58,12 +55,12 @@ body{
     position:relative;
     width:100vw;
     height:100vh;
-    background:var(--parchment);
+    background: var(--parchment); /* ここをクリーム色にすることで、最上部がクリーム色になります */
     overflow:hidden;
     display:flex;
     flex-direction:column;
-    /* 上部にスマホのノッチや時計を避けるための安全なパディング（24px）を設定 */
-    padding-top: 24px; 
+    /* iPhoneのステータスバーを避ける安全な余白を確保 */
+    padding-top: 44px; 
   }
   .notch{
     display: none; /* これを追加してスマホの偽ノッチを消します */
