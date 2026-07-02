@@ -27,7 +27,7 @@
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
-  body{
+body{
     font-family:var(--body);
     color:var(--text-main);
     background:
@@ -38,7 +38,7 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:28px 12px;
+    padding: 40px 0 0 0; /* 上に40pxだけ余白を空け、左右下は0にします */
     overflow-x:hidden;
   }
 
@@ -74,7 +74,8 @@
     border-radius:20px;
     z-index:50;
   }
-  .statusbar{
+.statusbar{
+    display: none; /* これを追加してアプリ内の時計を消します */
     height:52px;
     flex:0 0 auto;
     display:flex;
