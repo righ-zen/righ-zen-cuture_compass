@@ -468,7 +468,7 @@ const DMIS_STAGES = [
   { name:"Minimization", group:"Ethnocentric", color:"var(--brass)", blurb:"Surface differences are visible, but deep down there is a strong insistence that 'we are all the same,' which can flatten critical cultural nuances." },
   { name:"Acceptance", group:"Ethnorelative", color:"var(--sage)", blurb:"Other cultures are recognized as genuinely different and equally legitimate ways of organizing reality — not better or worse, just different." },
   { name:"Adaptation", group:"Ethnorelative", color:"var(--sage)", blurb:"You can consciously shift perspective and communication styles to interact effectively, seeing situations through more than one cultural lens." },
-  { name:"Integration", group:"Ethnorelative", color:"var(--sage)", blurb:"Cultural frames become fluid parts of identity — you move between different cultural contexts naturally and authentically." }
+  { name:"Integration", group:"Ethnorelative", color:"var(--sage)", blurb:"Cultural frames become fluid parts of identity — you move between them naturally, depending on context." }
 ];
 
 const DMIS_QUESTIONS = [
@@ -623,9 +623,8 @@ function switchTab(id){
   if (id==="coach") scrollChatToBottom();
 }
 
-function countryOptions(selected){ return `<option value="" disabled ${!selected?'selected':''}>Choose a country/culture…</option>` + COUNTRIES.map(c=>`<option value="${c}" ${c===selected?'selected':''}>${c}</option>`).join(""); }
+function countryOptions(selected){ return `<option value="" disabled ${!selected?'selected':''}>Choose a country/culture…</option>` + COUNTRIES.map(c=>`<option value="${c}" ${c===selected?'selected':''}/></svg>${c}</option>`).join(""); }
 
-/* 抜け落ちていたオンボーディング用画面描画ロジックを完全復元 */
 function renderOnboarding(){
   const scroll = document.getElementById("onboardingScroll"); const footer = document.getElementById("onboardingFooter"); let body = "", footerHtml = "";
   if (onboardingStep === 0){
@@ -814,15 +813,9 @@ function renderCoach(){
     </div>`; scrollChatToBottom();
 }
 
-function scrollChatToBottom(){ const s = document.getElementById("chatScroll"); if (s) s.scrollTop = s.scrollHeight; }
 function formatAiText(t){ let s = escapeHtml(t); s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); s = s.replace(/\n/g, "<br>"); return s; }
 function sendCoachMessageFromInput(){ const ta = document.getElementById("coachInput"); const text = ta.value.trim(); if (!text) return; ta.value = ""; sendCoachMessage(text); }
-
-function selectQuickPromptIndex(idx) {
-  if (QUICK_PROMPTS[idx]) {
-    sendCoachMessage(QUICK_PROMPTS[idx]);
-  }
-}
+function selectQuickPromptIndex(idx) { if (QUICK_PROMPTS[idx]) { sendCoachMessage(QUICK_PROMPTS[idx]); } }
 
 async function sendCoachMessage(text){
   STATE.coachHistory.push({ role:"user", text }); 
@@ -998,50 +991,6 @@ async function runTranslate(){
   }
 }
 
-function openEditProfile(){
-  openModal('<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>' +
-    '<div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; color:var(--ink-navy);">Settings & Coordinates</div>' +
-    '<p class="screen-sub" style="margin-bottom:16px;">Calibrate your structural routing parameters.</p>' +
-    '<div class="field"><label class="field-label">Your Name</label><input type="text" id="ep-name" value="' + escapeHtml(STATE.profile.name) + '"></div>' +
-    '<div class="field"><label class="field-label">HOME Culture</label><select id="ep-home">' + countryOptions(STATE.profile.home) + '</select></div>' +
-    '<div class="field"><label class="field-label">HOST Culture</label><select id="ep-host">' + countryOptions(STATE.profile.host) + '</select></div>' +
-    '<button class="btn btn-primary btn-block" style="margin-bottom:12px;" onclick="saveEditProfile();">Save Changes</button>' +
-    '<div class="section-label" style="margin:20px 0 10px;">Presentation Utilities</div>' +
-    '<div style="display:flex; gap:10px;">' +
-      '<button class="btn btn-ghost" style="flex:1; color:var(--sage); border-color:var(--sage); box-shadow:none; font-size:13px; padding:10px;" onclick="injectDemoData();">📊 Load Demo Data</button>' +
-      '<button class="btn btn-ghost" style="flex:1; color:var(--rust); border-color:var(--rust); box-shadow:none; font-size:13px;" onclick="resetApp();">🗑️ Reset App</button>' +
-    '</div>');
-}
-
-async function injectDemoData(){
-  STATE.dmis = { stageIndex: 3, score: 44, date: todayStr() };
-  STATE.tracker = [
-    {id: "1", date: "2026-06-20", mood: 4, note: "Arrived at host campus! Energetic vibe."},
-    {id: "2", date: "2026-06-22", mood: 5, note: "Met some great peer network groups."},
-    {id: "3", date: "2026-06-24", mood: 3, note: "Slight bureaucratic friction with registration."},
-    {id: "4", date: "2026-06-26", mood: 2, note: "Communication styles here feel confusing today."},
-    {id: "5", date: "2026-06-28", mood: 2, note: "Missed family group threads. Feeling slightly isolated."},
-    {id: "6", date: "2026-06-30", mood: 3, note: "Deconstructed the friction via AI Coach. Clicking."},
-    {id: "7", date: "2026-07-02", mood: 4, note: "Built solid functional baseline routines today."}
-  ];
-  STATE.journal = [
-    {id: "j1", date: "2026-06-25", prompt: "Describe a moment today when you noticed a cultural difference.", text: "Noticed heavy high-context processing loops during our class group assignment setup. People heavily navigate face-saving parameters rather than stating explicit low-context critiques."},
-    {id: "j2", date: "2026-06-29", prompt: "What implicit assumption did you catch yourself making today?", text: "Caught myself assuming someone was being dismissive by breaking direct eye contact, but deconstructed it as an act of polite, deep-rooted collective deference."}
-  ];
-  STATE.challenges.completedDates = {"2026-07-01": true, "2026-07-02": true};
-  STATE.challenges.streak = 2;
-  await Promise.all([persistUserState(), storeSet("tracker-entries", STATE.tracker), storeSet("journal-entries", STATE.journal), storeSet("challenges-state", STATE.challenges)]);
-  closeModal(); renderAll();
-}
-
-async function resetApp(){
-  if(confirm("Reset entire local database session?")){
-    await Promise.all([storeSet("user-state", null), storeSet("tracker-entries", []), storeSet("journal-entries", []), storeSet("challenges-state", null), storeSet("coach-history", [])]);
-    window.location.reload();
-  }
-}
-
 boot();
 </script>
-</body>
 </html>
