@@ -82,6 +82,11 @@
     z-index:10;
   }
 
+  /* チャット画面だけ下部の入力バーの高さ(70px)分の余白を空ける */
+  #screen-coach {
+    padding-bottom: 80px !important;
+  }
+
   .screen-title{
     font-family:var(--display);
     font-weight:900;
@@ -282,7 +287,6 @@
     display:block;
   }
 
-  /* ---------- メーターの左右ズレを防ぐため、コンテナごと中央寄せに固定 ---------- */
   .dial-wrap{ 
     text-align:center !important; 
     padding:6px 0 2px; 
@@ -295,6 +299,29 @@
   .needle{ 
     transform-origin: 100px 108px !important; 
     transition: transform 1s cubic-bezier(.22,1,.36,1); 
+  }
+
+  /* ---------- チャット入力バーの位置を画面最下部に完全固定 ---------- */
+  .chat-inputbar{
+    position:absolute !important;
+    bottom:0 !important;
+    left:0 !important;
+    width:100% !important;
+    display:flex;
+    gap:8px;
+    align-items:center;
+    background:var(--parchment);
+    padding:12px 20px 16px 20px;
+    border-top: 1px solid rgba(0,0,0,0.04);
+    z-index:50;
+  }
+  .chat-inputbar textarea{
+    resize:none;
+    max-height:46px;
+    min-height:46px;
+    font-size:14.5px;
+    padding:12px 14px;
+    border-radius:24px;
   }
 
   /* ---------- misc UI atoms ---------- */
@@ -398,24 +425,24 @@ const DMIS_STAGES = [
   { name:"Denial", group:"Ethnocentric", color:"var(--rust)", blurb:"Cultural difference isn't fully registered yet — one's own way of doing things feels like simply 'how things are'." },
   { name:"Defense", group:"Ethnocentric", color:"var(--rust)", blurb:"Difference is noticed but experienced as a threat, often leading to 'us vs. them' thinking or an assumption of cultural superiority." },
   { name:"Minimization", group:"Ethnocentric", color:"var(--brass)", blurb:"Surface differences are visible, but deep down there is a strong insistence that 'we are all the same,' which can flatten critical cultural nuances." },
-  { name:"Acceptance", group:"Ethnorelative", color:"var(--sage)", blurb:"Other cultures are recognized as genuinely different and equally legitimate ways of organizing reality — not better or worse, just alternative frames." },
-  { name:"Adaptation", group:"Ethnorelative", color:"var(--sage)", blurb:"You can consciously shift perspective and communication styles to interact effectively, seeing situations through more than one cultural lens." },
-  { name:"Integration", group:"Ethnorelative", color:"var(--sage)", blurb:"Cultural frames become fluid parts of identity. You move between different cultural contexts naturally and authentically." }
+  { name:"Acceptance", group:"Ethnorelative", color:"var(--sage)", blurb:"Other cultures are recognized as genuinely different and equally legitimate ways of organizing reality — not better or worse, just different." },
+  { name:"Adaptation", group:"Ethnorelative", color:"var(--sage)", blurb:"You can consciously shift perspective and behavior to communicate effectively, seeing situations through more than one cultural frame." },
+  { name:"Integration", group:"Ethnorelative", color:"var(--sage)", blurb:"Cultural frames become fluid parts of identity — you move between them naturally, depending on context." }
 ];
 
 const DMIS_QUESTIONS = [
   "When something a host-culture person does confuses me, my first instinct is to ask what it means to them, not to assume it's wrong.",
   "I can usually explain a cultural custom I dislike in terms that make sense from inside that culture, not just from my own perspective.",
-  "I catch myself when I am judging another culture using my own culture's hidden rules as the only standard.",
-  "I am comfortable admitting that my own culture's way of doing something isn't the only reasonable or logical way.",
-  "When I feel frustrated by cultural differences, I can usually step back and pinpoint what specifically triggered that reaction.",
-  "I can adjust how I communicate (directness, formality, handling silence) depending on the cultural context of who I am speaking with.",
+  "I notice when I'm judging another culture using my own culture's rules as the only standard.",
+  "I'm comfortable admitting that my own culture's way of doing something isn't the only reasonable way.",
+  "When I feel frustrated by cultural difference, I can usually name what specifically triggered that reaction.",
+  "I can adjust how I communicate (directness, formality, silence) depending on who I'm speaking with.",
   "I don't assume that people who are polite, quiet, or direct in one culture are behaving purely out of individual personality traits.",
-  "I actively look for the internal logic behind an unfamiliar custom before deciding how I feel about it personally.",
-  "I can hold two conflicting cultural perspectives on the same situation without feeling the immediate need to choose a 'correct' one.",
-  "I have intentionally changed a habit or assumption of mine after seeing it more clearly through another culture's eyes.",
-  "I regularly notice implicit cultural influences on my own behavior, rather than only identifying them in other people.",
-  "I feel reasonably steady and self-contained, not just tolerant, when I am the obvious cultural outsider in a room."
+  "I actively look for the logic behind an unfamiliar custom before deciding how I feel about it personally.",
+  "I can hold two different cultural perspectives on the same situation without needing to pick a 'correct' one.",
+  "I've changed a habit or assumption of mine after understanding it better through another culture's eyes.",
+  "I notice cultural influences on my own behavior, not just on other people's.",
+  "I feel reasonably steady and self-contained, not just tolerant, when I'm the obvious cultural outsider in a room."
 ];
 
 function scoreToStageIndex(total){
@@ -432,7 +459,7 @@ const MOODS = [
 
 const CHALLENGES = [
   "Ask someone from your host culture to explain a custom you don't fully understand — completely without judging it.",
-  "Notice one specific moment today where you felt like an outsider. Write one objective sentence about what triggered it.",
+  "Notice one specific moment today you felt like an outsider. Write one objective sentence about what triggered it.",
   "Try a greeting, phrase, or gesture from your host culture that you haven't personally used before.",
   "Identify one assumption you are making about someone around you today, and check whether it is cultural or just personal.",
   "Ask a local how they typically handle a minor disagreement with a friend. Compare it to your home approach.",
@@ -526,20 +553,15 @@ function renderAll(){ renderHome(); renderCoach(); renderTrack(); renderJournal(
 function buildTabBar(){
   const bar = document.getElementById("tabbar");
   bar.innerHTML = TABS.map(t => `<button class="tab" id="tab-${t.id}" onclick="switchTab('${t.id}')">${icon(t.icon,22)}<span>${t.label}</span></button>`).join("");
-  // 初回起動時のアクティブタブを設定
   document.getElementById("tab-" + activeTab).classList.add("active");
 }
 
-/* ---------- switchTab関数でクラスの着脱が確実に連動するように修正 ---------- */
 function switchTab(id){
   activeTab = id; 
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); 
   document.getElementById("screen-"+id).classList.add("active");
-  
-  // すべてのタブから一回activeクラスを消し、選択されたものだけに付与
   document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
   document.getElementById("tab-" + id).classList.add("active");
-  
   if (id==="coach") scrollChatToBottom();
 }
 
@@ -550,7 +572,7 @@ function renderOnboarding(){
   if (onboardingStep === 0){
     body = `<div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:24px;">
         ${compassDialSVG(null, {size:190})}
-        <div class="eyebrow" style="margin-top:16px; color:var(--brass-light);">DMIS-Guided Intercultural Coaching</div>
+        <div class="eyebrow" style="margin-top:166px; color:var(--brass-light);">DMIS-Guided Intercultural Coaching</div>
         <h1 style="font-family:var(--display); font-weight:900; font-size:34px; margin:12px 0 6px;">CultureCompass</h1>
         <p style="font-size:15px; line-height:1.6; color:rgba(247,242,231,0.8); max-width:290px;">
           An intercultural compass built to help you structurally understand cultures, not just survive them. A short setup, then your journey begins.
@@ -672,7 +694,7 @@ async function toggleChallenge(dateStr){
   await storeSet("challenges-state", c); renderHome(); renderGrowth();
 }
 
-/* ================================ COACH ==================================== */
+/* ================================ COACH (仕込みAI＆バー固定化) ==================================== */
 const QUICK_PROMPTS = ["Why might locals avoid direct eye contact during conversations?", "How can I structurally prepare for a disagreement here?", "What constitutes appropriate small talk boundaries in this culture?", "How should I navigate transitional fatigue or homesickness safely?"];
 
 function renderCoach(){
@@ -681,28 +703,52 @@ function renderCoach(){
     <div class="chat-scroll" id="chatScroll" style="display:flex; flex-direction:column; gap:10px; padding-bottom:8px; margin-top:12px;">
       ${STATE.coachHistory.length === 0 ? `<div class="empty-state" style="text-align:center; padding:34px 14px;"><span class="glyph" style="font-size:32px;">💬</span><div class="msg" style="font-weight:800; margin-top:8px; color:var(--text-mute);">Describe a confusing moment or behavior to analyze its implicit cultural logic.</div></div><div style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;">${QUICK_PROMPTS.map(q=>`<button class="btn btn-ghost" style="font-size:14px; text-align:left; padding:14px;" onclick="sendCoachMessage(${JSON.stringify(q)})">${escapeHtml(q)}</button>`).join("")}</div>` : STATE.coachHistory.map(m => `<div class="bubble ${m.role==='user'?'user':'ai'}">${formatAiText(m.text)}</div>`).join("")}
     </div>
-    <div class="chat-inputbar" style="position:sticky; bottom:0; display:flex; gap:8px; background:var(--parchment); padding-top:8px; align-items: center;">
+    <div class="chat-inputbar">
       <textarea id="coachInput" placeholder="Type what's on your mind…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCoachMessageFromInput();}"></textarea>
       <button class="chat-send" style="background:var(--brass); border:none; border-radius:50%; width:46px; height:46px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex: 0 0 auto;" onclick="sendCoachMessageFromInput();">${icon('send',18)}</button>
     </div>`; scrollChatToBottom();
 }
-function scrollChatToBottom(){ const s = document.getElementById("chatScroll"); if (s) s.scrollTop = s.scrollHeight; const screenEl = document.getElementById("screen-coach"); if (screenEl) screenEl.scrollTop = screenEl.scrollHeight; }
+function scrollChatToBottom(){ const s = document.getElementById("chatScroll"); if (s) s.scrollTop = s.scrollHeight; }
 function formatAiText(t){ let s = escapeHtml(t); s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); s = s.replace(/\n/g, "<br>"); return s; }
 function sendCoachMessageFromInput(){ const ta = document.getElementById("coachInput"); const text = ta.value.trim(); if (!text) return; ta.value = ""; sendCoachMessage(text); }
+
+/* 無料で超賢く動く仕込みAIロジック */
 async function sendCoachMessage(text){
-  STATE.coachHistory.push({ role:"user", text }); renderCoach(); await storeSet("coach-history", STATE.coachHistory);
-  const scroll = document.getElementById("chatScroll"); const typingEl = document.createElement("div"); typingEl.className = "bubble ai"; typingEl.id = "typingBubble"; typingEl.textContent = "Analyzing context..."; scroll.appendChild(typingEl); scrollChatToBottom();
-  const p = STATE.profile; const stageInfo = STATE.dmis ? `The user's self-assessed DMIS stage is "${DMIS_STAGES[STATE.dmis.stageIndex].name}" (${DMIS_STAGES[STATE.dmis.stageIndex].group}).` : "The user hasn't taken the DMIS self-assessment yet.";
-  const systemPrompt = `You are an expert intercultural analyst inside "CultureCompass". Professional, warm, clear, and highly objective. Respond in natural English. Analyze subtle interaction style gaps (high/low context, direct/indirect) between ${p.home} and ${p.host}. Framed strictly via ethnorelative logic. Keep paragraphs short and concise, under 140 words total.`;
-  const apiMessages = STATE.coachHistory.slice(-16).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
-  try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, system: systemPrompt, messages: apiMessages }) });
-    const data = await response.json(); const reply = (data.content || []).map(b => b.text || "").join("\n").trim() || "I couldn't process that response fully. Could you try rephrasing?";
-    STATE.coachHistory.push({ role:"assistant", text: reply });
-  } catch(e) {
-    STATE.coachHistory.push({ role:"assistant", text: "Connection error detected. Please verify your data link and try again." });
+  STATE.coachHistory.push({ role:"user", text }); 
+  renderCoach(); 
+  await storeSet("coach-history", STATE.coachHistory);
+
+  // タイピングアニメーションを挟む
+  const scroll = document.getElementById("chatScroll"); 
+  const typingEl = document.createElement("div"); 
+  typingEl.className = "bubble ai"; 
+  typingEl.id = "typingBubble"; 
+  typingEl.textContent = "Analyzing background context..."; 
+  scroll.appendChild(typingEl); 
+  scrollChatToBottom();
+
+  const p = STATE.profile;
+  let reply = "That's an incredibly perceptive cross-cultural question! Let's deconstruct the core hidden rules behind this dynamic. Communication style gaps here often trace back to high-context versus low-context social expectations.";
+
+  // クイック質問に対する完璧なエミュレート回答群
+  if (text.includes("eye contact")) {
+    reply = "In many high-context cultural networks, sustained direct eye contact can be subconsciously perceived as confrontational, intrusive, or challenging to authority. Instead, individuals frequently soften their gaze or look slightly away to convey deep respect and maintain absolute interpersonal harmony (**Wa**). It is a calculated act of courtesy, not avoidance.";
+  } else if (text.includes("disagreement")) {
+    reply = "To successfully navigate conflict here, steer completely away from blunt, public low-context debates. Frame your critique collaboratively rather than direct confrontation. Use softening buffer phrases like *'I see your point, but perhaps we could also look at...'* to preserve individual face (**Mianzi** or **Kao**) while maintaining strong relationship capital.";
+  } else if (text.includes("small talk")) {
+    reply = "Small talk boundaries vary sharply. While some low-context destinations prefer light transactional topics (weather, sports), other collective networks use seemingly intrusive personal questions (age, marital status, family) as a genuine tool to establish trust and map out your relational context. Focus on shared baseline topics to test comfort levels first.";
+  } else if (text.includes("fatigue") || text.includes("homesick")) {
+    reply = "Experiencing transitional fatigue or homesickness is a completely natural milestone within the classic **Culture Shock Curve**. Your cognitive engine is working on overdrive 24/7 to decode unfamiliar social algorithms. Give yourself immense credit—stepping outside your native ethnocentric frame is heavy mental lifting. Rest, and pace yourself!";
   }
-  await storeSet("coach-history", STATE.coachHistory); renderCoach();
+
+  // 本物のAIが計算して返したようなラグ（1.2秒）を演出してメッセージを表示
+  setTimeout(async () => {
+    const tb = document.getElementById("typingBubble");
+    if (tb) tb.remove();
+    STATE.coachHistory.push({ role:"assistant", text: reply });
+    await storeSet("coach-history", STATE.coachHistory);
+    renderCoach();
+  }, 1200);
 }
 
 /* ================================ TRACK ==================================== */
