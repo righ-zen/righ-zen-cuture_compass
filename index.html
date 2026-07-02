@@ -426,7 +426,7 @@ const DMIS_STAGES = [
   { name:"Defense", group:"Ethnocentric", color:"var(--rust)", blurb:"Difference is noticed but experienced as a threat, often leading to 'us vs. them' thinking or an assumption of cultural superiority." },
   { name:"Minimization", group:"Ethnocentric", color:"var(--brass)", blurb:"Surface differences are visible, but deep down there is a strong insistence that 'we are all the same,' which can flatten critical cultural nuances." },
   { name:"Acceptance", group:"Ethnorelative", color:"var(--sage)", blurb:"Other cultures are recognized as genuinely different and equally legitimate ways of organizing reality — not better or worse, just different." },
-  { name:"Adaptation", group:"Ethnorelative", color:"var(--sage)", blurb:"You can consciously shift perspective and behavior to communicate effectively, seeing situations through more than one cultural frame." },
+  { name:"Adaptation", group:"Ethnorelative", color:"var(--sage)", blurb:"You can consciously shift perspective and behavior to communicate effectively, seeing situations through more than one cultural lens." },
   { name:"Integration", group:"Ethnorelative", color:"var(--sage)", blurb:"Cultural frames become fluid parts of identity — you move between them naturally, depending on context." }
 ];
 
@@ -541,7 +541,6 @@ function classifyPhase(entries){
 }
 
 async function boot(){
-  /* 異常セッションを確実にパージするためのお掃除用フックを再定義 */
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('v') === 'clear') {
     await Promise.all([storeSet("user-state", null), storeSet("tracker-entries", []), storeSet("journal-entries", []), storeSet("challenges-state", null), storeSet("coach-history", [])]);
@@ -625,9 +624,6 @@ function renderOnboarding(){
   }
   scroll.innerHTML = body; footer.innerHTML = footerHtml;
 }
-
-function onboardingStepForward(){ onboardingStep++; renderOnboarding(); }
-function onboardingStepBackward(){ onboardingStep--; renderOnboarding(); }
 
 function obSaveName(){ onboardingDraft.name = document.getElementById("ob-name").value.trim() || "Traveler"; onboardingStep = 2; renderOnboarding(); }
 function obSaveHome(){ const v = document.getElementById("ob-home").value; if (!v) return; onboardingDraft.home = v; onboardingStep = 3; renderOnboarding(); }
@@ -768,7 +764,7 @@ function renderJournal(){
     ${STATE.journal.length === 0 ? `<div class="empty-state" style="text-align:center; padding:34px 14px;"><span class="glyph" style="font-size:36px;">📓</span><div class="msg" style="font-weight:700; margin-top:8px;">Your first entry takes two minutes. Choose a reflection prompt to start.</div></div>` : `<div class="section-label">REFLECTIONS LOG</div><div class="card" style="padding:8px 12px;">${STATE.journal.slice().reverse().map(j => `<div class="list-item" onclick="viewEntry('${j.id}')" style="cursor:pointer;"><div class="li-icon">📝</div><div class="li-body"><div class="li-title">${fmtDate(j.date)}</div><div class="li-sub">${escapeHtml(j.text.slice(0,35))}${j.text.length>35?'…':''}</div></div>${icon('chevron',16)}</div>`).join("")}</div>`}`;
 }
 function openNewEntry(){
-  const promptIdx = Math.floor(Math.random()*JOURNAL_PROMPTS.length);
+  const promptIdx = Math.floor(Math.random()*JOURNAL_PROOPTS.length);
   openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
     <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:20px;">Reflection Prompt</div>
     <div class="card" style="background:var(--parchment-dim); border:none; margin:12px 0 16px; box-shadow:none;"><p id="entryPromptText" style="font-size:14.5px; font-weight:700; margin:0; line-height:1.6; color:var(--text-main);">${escapeHtml(JOURNAL_PROMPTS[promptIdx])}</p>
