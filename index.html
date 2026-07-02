@@ -48,7 +48,8 @@
     overflow:hidden;
     display:flex;
     flex-direction:column;
-    padding-top: 44px;
+    padding-top: env(safe-area-inset-top, 20px);
+    padding-bottom: env(safe-area-inset-bottom, 20px);
     background:var(--parchment);
   }
   .statusbar{
@@ -263,6 +264,39 @@
     background:var(--line); margin:2px auto 18px;
   }
 
+  .sheet-close {
+    width:40px !important;
+    height:40px !important;
+    border-radius:50% !important;
+    background:var(--parchment-dim);
+    border:none;
+    cursor:pointer;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    color:var(--text-mute);
+    padding:0 !important;
+    margin:0;
+  }
+  .sheet-close svg, .btn-ghost svg {
+    display:block;
+  }
+
+  /* ---------- メーターの左右ズレを防ぐため、コンテナごと中央寄せに固定 ---------- */
+  .dial-wrap{ 
+    text-align:center !important; 
+    padding:6px 0 2px; 
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .needle{ 
+    transform-origin: 100px 108px !important; 
+    transition: transform 1s cubic-bezier(.22,1,.36,1); 
+  }
+
   /* ---------- misc UI atoms ---------- */
   .chip{
     display:inline-flex; align-items:center; gap:6px;
@@ -459,7 +493,7 @@ function compassDialSVG(stageIndex, opts){
     arcs += `<path d="M ${p0.x} ${p0.y} A ${r} ${r} 0 0 1 ${p1.x} ${p1.y}" fill="none" stroke="${col}" stroke-width="12" stroke-linecap="round" opacity="${dim?0.4:1}"/>`;
   }
   const needleAngle = known ? (-90 + segAngle*idx + segAngle/2) : -90 + segAngle/2;
-  return `<svg viewBox="0 0 200 140" width="${size}" height="${size*0.7}">${arcs}<circle cx="${cx}" cy="${cy}" r="7" fill="var(--ink-navy)"/><g style="transform-origin:${cx}px ${cy}px; transform:rotate(${needleAngle+90}deg); transition:transform 1s cubic-bezier(.22,1,.36,1);"><path d="M ${cx} ${cy-58} L ${cx-4} ${cy} L ${cx+4} ${cy} Z" fill="var(--brass)"/></g></svg>`;
+  return `<svg viewBox="0 0 200 140" width="${size}" height="${size*0.7}">${arcs}<circle cx="${cx}" cy="${cy}" r="7" fill="var(--ink-navy)"/><path class="needle" d="M ${cx} ${cy-58} L ${cx-4} ${cy} L ${cx+4} ${cy} Z" fill="var(--brass)" style="transform:rotate(${needleAngle+90}deg);"/></svg>`;
 }
 function polar(cx,cy,r,angleDeg){ const a = (angleDeg-90) * Math.PI/180; return { x: cx + r*Math.cos(a), y: cy + r*Math.sin(a) }; }
 
@@ -491,11 +525,22 @@ function renderAll(){ renderHome(); renderCoach(); renderTrack(); renderJournal(
 
 function buildTabBar(){
   const bar = document.getElementById("tabbar");
-  bar.innerHTML = TABS.map(t => `<button class="tab ${t.id===activeTab?'active':''}" data-tab="${t.id}" onclick="switchTab('${t.id}')">${icon(t.icon,22)}<span>${t.label}</span></button>`).join("");
+  bar.innerHTML = TABS.map(t => `<button class="tab" id="tab-${t.id}" onclick="switchTab('${t.id}')">${icon(t.icon,22)}<span>${t.label}</span></button>`).join("");
+  // 初回起動時のアクティブタブを設定
+  document.getElementById("tab-" + activeTab).classList.add("active");
 }
+
+/* ---------- switchTab関数でクラスの着脱が確実に連動するように修正 ---------- */
 function switchTab(id){
-  activeTab = id; document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); document.getElementById("screen-"+id).classList.add("active");
-  document.querySelectorAll(".tab").forEach(b => b.toggle("active", b.dataset.tab===id)); if (id==="coach") scrollChatToBottom();
+  activeTab = id; 
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); 
+  document.getElementById("screen-"+id).classList.add("active");
+  
+  // すべてのタブから一回activeクラスを消し、選択されたものだけに付与
+  document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + id).classList.add("active");
+  
+  if (id==="coach") scrollChatToBottom();
 }
 
 function countryOptions(selected){ return `<option value="" disabled ${!selected?'selected':''}>Choose a country/culture…</option>` + COUNTRIES.map(c=>`<option value="${c}" ${c===selected?'selected':''}>${c}</option>`).join(""); }
@@ -557,7 +602,7 @@ function obSaveHost(){ const v = document.getElementById("ob-host").value; if (!
 async function finishOnboarding(){ STATE.profile = { name: onboardingDraft.name, home: onboardingDraft.home, host: onboardingDraft.host, createdAt: todayStr() }; await persistUserState(); document.getElementById("onboarding").classList.add("hidden"); renderAll(); }
 
 function openEditProfile(){
-  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer; background:var(--parchment-dim); color:var(--text-mute);" onclick="closeModal();">✕</button>
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
     <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; color:var(--ink-navy);">Edit Profile</div>
     <p class="screen-sub" style="margin-bottom:16px;">Updating your coordinates automatically recalculates your analyst's contextual frame.</p>
     <div class="field"><label class="field-label">Your Name</label><input type="text" id="ep-name" value="${escapeHtml(STATE.profile.name)}"></div>
@@ -579,7 +624,7 @@ function renderHome(){
         <div class="eyebrow">${greetingWord()}</div>
         <div class="screen-title" style="margin-top:2px;">${escapeHtml(p.name)}</div>
       </div>
-      <button class="btn btn-ghost" style="padding:10px; box-shadow:none; border-radius:50%;" onclick="openEditProfile();">${icon('gear',20)}</button>
+      <button class="sheet-close" onclick="openEditProfile();">${icon('gear',20)}</button>
     </div>
     <div class="screen-sub" style="margin-top: 4px;">${fmtDateLong(today)} · <span class="chip brass" style="margin-left:2px; font-weight:800;">${escapeHtml(p.home)} ➔ ${escapeHtml(p.host)}</span></div>
 
@@ -685,7 +730,7 @@ function renderJournal(){
 }
 function openNewEntry(){
   const promptIdx = Math.floor(Math.random()*JOURNAL_PROMPTS.length);
-  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:16px; right:16px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer; background:var(--parchment-dim); color:var(--text-mute);" onclick="closeModal();">✕</button>
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
     <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:20px;">Reflection Prompt</div>
     <div class="card" style="background:var(--parchment-dim); border:none; margin:12px 0 16px; box-shadow:none;"><p id="entryPromptText" style="font-size:14.5px; font-weight:700; margin:0; line-height:1.6; color:var(--text-main);">${escapeHtml(JOURNAL_PROMPTS[promptIdx])}</p>
       <button class="btn btn-ghost" style="margin-top:12px; font-size:12px; padding:6px 12px; box-shadow:none;" onclick="shufflePrompt();">🎲 Shuffle New Prompt</button></div>
@@ -696,7 +741,7 @@ function shufflePrompt(){ const sheet = document.getElementById("modalSheet"); l
 async function saveEntry(){ const text = document.getElementById("entryText").value.trim(); if (!text) return; const idx = parseInt(document.getElementById("modalSheet").dataset.promptIdx, 10); STATE.journal.push({ id: uid(), date: todayStr(), prompt: JOURNAL_PROMPTS[idx], text }); await storeSet("journal-entries", STATE.journal); closeModal(); renderJournal(); renderHome(); renderGrowth(); }
 function viewEntry(id){
   const j = STATE.journal.find(e => e.id === id); if (!j) return;
-  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer; background:var(--parchment-dim); color:var(--text-mute);" onclick="closeModal();">✕</button>
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
     <div class="eyebrow">${fmtDateLong(j.date)}</div><div class="sheet-title" style="font-size:16px; margin-top:6px; font-weight:800; line-height:1.4;">${escapeHtml(j.prompt)}</div>
     <p style="font-size:14.5px; font-weight:600; line-height:1.65; white-space:pre-wrap; margin-top:14px; color:var(--text-main);">${escapeHtml(j.text)}</p>
     <button class="btn btn-ghost btn-block" style="margin-top:18px; color:var(--rust); border-color:var(--rust); box-shadow:none;" onclick="deleteEntry('${j.id}');">Delete This Entry</button>`);
@@ -708,8 +753,8 @@ function renderGrowth(){
   const el = document.getElementById("screen-growth"); const today = todayStr(); const challengeIdx = dayOfYear(new Date()) % CHALLENGES.length; const daysActive = STATE.profile ? Math.max(1, Math.round((new Date(today) - new Date(STATE.profile.createdAt))/86400000)+1) : 1; const values = STATE.tracker.slice(-14).map(e=>e.mood);
   el.innerHTML = `<div class="eyebrow" style="margin-top:8px;">DMIS ASSESSMENT SCHEMA</div><div class="screen-title" style="margin-top:2px; font-size:24px;">Development Visible</div><div class="screen-sub">Tracking orientation changes across Milton Bennett's Developmental Model of Intercultural Sensitivity.</div>
     <div class="card"><div class="dial-wrap">${compassDialSVG(STATE.dmis ? STATE.dmis.stageIndex : null, {size:190})}
-        ${STATE.dmis ? `<div class="dial-stage-name" style="font-weight:900; font-size:20px; color:var(--ink-navy); margin-top:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</div><div class="dial-stage-group" style="font-weight:800; font-size:12px; color:var(--brass); margin-top:2px;">Metric Score: ${STATE.dmis.score} / 60 (Stage: ${DMIS_STAGES[STATE.dmis.stageIndex].group})</div><p style="font-size:13.5px; font-weight:700; color:var(--text-mute); line-height:1.6; margin:10px 4px 14px;">${DMIS_STAGES[STATE.dmis.stageIndex].blurb}</p>` : `<div class="dial-stage-name" style="font-weight:900; font-size:17px; margin-top:6px;">Sensitivity Level Unmeasured</div><div class="dial-stage-group" style="color:var(--brass); font-weight:800; font-size:11px;">Complete the core self-assessment to map your developmental frame.</div><div style="height:12px;"></div>`}</div>
-      <button class="btn ${STATE.dmis?'btn-ghost':'btn-brass'} btn-block" onclick="startQuiz();">${STATE.dmis ? 'Retake Sensitivity Assessment' : 'Evaluate Intercultural Stage'}</button></div>
+        ${STATE.dmis ? `<div class="dial-stage-name" style="font-weight:900; font-size:20px; color:var(--ink-navy); margin-top:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</div><div class="dial-stage-group" style="font-weight:800; font-size:12px; color:var(--brass); margin-top:2px;">Metric Score: ${STATE.dmis.score} / 60 (Stage: ${DMIS_STAGES[STATE.dmis.stageIndex].group})</div><p style="font-size:13.5px; font-weight:700; color:var(--text-mute); line-height:1.6; margin:12px 4px 14px;">${DMIS_STAGES[STATE.dmis.stageIndex].blurb}</p>` : `<div class="dial-stage-name" style="font-weight:900; font-size:17px; margin-top:6px;">Sensitivity Level Unmeasured</div><div class="dial-stage-group" style="color:var(--brass); font-weight:800; font-size:11px;">Complete the core self-assessment to map your developmental frame.</div><div style="height:12px;"></div>`}</div>
+      <button class="btn ${STATE.dmis?'btn-ghost':'btn-brass'} btn-block" onclick="startQuiz();">Evaluate Intercultural Stage</button></div>
     <div class="section-label">LEVEL METRICS</div>
     <div class="stat-grid">
       <div class="stat-box"><div class="stat-num">${daysActive}</div><span class="stat-label">Days Active</span></div>
@@ -731,7 +776,7 @@ let quizAnswers = []; let quizIndex = 0;
 function startQuiz(){ quizAnswers = new Array(DMIS_QUESTIONS.length).fill(null); quizIndex = 0; renderQuiz(); }
 function renderQuiz(){
   const total = DMIS_QUESTIONS.length; const pct = Math.round(((quizIndex)/total)*100);
-  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer; background:var(--parchment-dim); color:var(--text-mute);" onclick="closeModal();">✕</button>
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
     <div class="eyebrow">DMIS Evaluation · ${quizIndex+1} / ${total}</div><div class="quiz-progress" style="margin-top:12px;"><div class="quiz-progress-fill" style="width:${pct}%;"></div></div>
     <p style="font-size:18px; line-height:1.5; font-family:var(--display); font-weight:800; margin:4px 0 18px; color:var(--ink-navy);">${escapeHtml(DMIS_QUESTIONS[quizIndex])}</p>
     ${["Strongly Disagree","Disagree","Neutral","Agree","Strongly Agree"].map((label,i)=>`<button class="quiz-opt" style="display:block; width:100%; text-align:left; background:#fff; border:2px solid var(--line); border-radius:16px; padding:14px; margin-bottom:10px; font-size:14.5px; font-weight:700; cursor:pointer;" onclick="answerQuiz(${i+1})">${label}</button>`).join("")}`);
@@ -748,12 +793,12 @@ async function finishQuiz(){
     </div>`);
 }
 
-const TRANSLATE_LANGS = ["English","Japanese","Spanish","French","German","Mandarin Chinese","Korean","Portuguese","Arabic","Hindi","Vietnamese","Thai","Russian","Italian"];
+const TRANATE_LANGS = ["English","Japanese","Spanish","French","German","Mandarin Chinese","Korean","Portuguese","Arabic","Hindi","Vietnamese","Thai","Russian","Italian"];
 function openTranslate(){
-  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer; background:var(--parchment-dim); color:var(--text-mute);" onclick="closeModal();">✕</button>
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
     <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px;">Quick Translate</div><p class="screen-sub" style="margin-bottom:16px;">Translate phrases rapidly for everyday local navigation scenarios.</p>
     <div class="field"><label class="field-label">Source Text</label><textarea id="trText" rows="3" placeholder="Type a phrase here…"></textarea></div>
-    <div class="field"><label class="field-label">Target Language</label><select id="trLang">${TRANSLATE_LANGS.map(l=>`<option value="${l}">${l}</option>`).join("")}</select></div>
+    <div class="field"><label class="field-label">Target Language</label><select id="trLang">${TRANATE_LANGS.map(l=>`<option value="${l}">${l}</option>`).join("")}</select></div>
     <button class="btn btn-brass btn-block" onclick="runTranslate();">Execute Translation</button><div id="trResult"></div>`);
 }
 async function runTranslate(){
