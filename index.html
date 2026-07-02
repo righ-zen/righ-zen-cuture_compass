@@ -54,15 +54,16 @@ body{
   .phone{
     position:relative;
     width:100vw;
-    height:100vh;
+    /* 画面の100%から、上の余白44px分を最初から引き算します */
+    height: calc(100vh - 44px);
     background: var(--parchment); /* 最上部をクリーム色にする */[cite: 1]
     overflow:hidden;
     display:flex;
     flex-direction:column;
-    /* はみ出しを防ぐ魔法の一行（余白を高さの内側に含める設定） */
-    box-sizing: border-box; 
     /* iPhoneのステータスバーを避ける安全な余白 */
     padding-top: 44px; 
+    /* 下にズレるのを防ぐため、位置を最上部に固定 */
+    top: 0;
   }
   .notch{
     display: none; /* これを追加してスマホの偽ノッチを消します */
