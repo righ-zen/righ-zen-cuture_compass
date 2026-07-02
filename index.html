@@ -82,7 +82,6 @@
     z-index:10;
   }
 
-  /* コーチ画面専用の縦並び構造 */
   #screen-coach {
     display: flex !important;
     flex-direction: column !important;
@@ -303,19 +302,17 @@
     transition: transform 1s cubic-bezier(.22,1,.36,1); 
   }
 
-  /* ---------- チャット表示エリア（スクロール完全修正） ---------- */
   .chat-scroll {
     flex: 1 1 auto !important;
     overflow-y: auto !important;
     scrollbar-width: none;
-    padding-bottom: 90px !important; /* 入力欄の後ろに隠れないための余白 */
+    padding-bottom: 90px !important;
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
   .chat-scroll::-webkit-scrollbar { display: none; }
 
-  /* ---------- チャット入力バー（最下部に絶対固定） ---------- */
   .chat-inputbar{
     position: absolute !important;
     bottom: 0 !important;
@@ -338,7 +335,6 @@
     border-radius: 24px;
   }
 
-  /* ---------- ダミースキャン画面 ---------- */
   .camera-view {
     width: 100%;
     height: 240px;
@@ -470,8 +466,8 @@ const DMIS_STAGES = [
   { name:"Defense", group:"Ethnocentric", color:"var(--rust)", blurb:"Difference is noticed but experienced as a threat, often leading to 'us vs. them' thinking or an assumption of cultural superiority." },
   { name:"Minimization", group:"Ethnocentric", color:"var(--brass)", blurb:"Surface differences are visible, but deep down there is a strong insistence that 'we are all the same,' which can flatten critical cultural nuances." },
   { name:"Acceptance", group:"Ethnorelative", color:"var(--sage)", blurb:"Other cultures are recognized as genuinely different and equally legitimate ways of organizing reality — not better or worse, just different." },
-  { name:"Adaptation", group:"Ethnorelative", color:"var(--sage)", blurb:"You can consciously shift perspective and communication styles to interact effectively, seeing situations through more than one cultural lens." },
-  { name:"Integration", group:"Ethnorelative", color:"var(--sage)", blurb:"Cultural frames become fluid parts of identity — you move between different cultural contexts naturally and authentically." }
+  { name:"Adaptation", group:"Ethnorelative", color:"var(--sage)", blurb:"You can consciously shift perspective and behavior to communicate effectively, seeing situations through more than one cultural frame." },
+  { name:"Integration", group:"Ethnorelative", color:"var(--sage)", blurb:"Cultural frames become fluid parts of identity — you move between them naturally, depending on context." }
 ];
 
 const DMIS_QUESTIONS = [
@@ -582,11 +578,27 @@ function classifyPhase(entries){
 }
 
 async function boot(){
+  /* 強制リセット用のフック */
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('v') === 'clear') {
+    await Promise.all([storeSet("user-state", null), storeSet("tracker-entries", []), storeSet("journal-entries", []), storeSet("challenges-state", null), storeSet("coach-history", [])]);
+    window.location.href = window.location.pathname; // URLの?以降を消してリダイレクト
+    return;
+  }
+
   const [userState, tracker, journal, challenges, coachHistory] = await Promise.all([storeGet("user-state"), storeGet("tracker-entries"), storeGet("journal-entries"), storeGet("challenges-state"), storeGet("coach-history")]);
   if (userState){ STATE.profile = userState.profile || null; STATE.dmis = userState.dmis || null; }
   STATE.tracker = tracker || []; STATE.journal = journal || []; STATE.challenges = challenges || { completedDates:{}, streak:0, lastDate:null }; STATE.coachHistory = coachHistory || [];
+  
   buildTabBar();
-  if (!STATE.profile){ onboardingStep = 0; renderOnboarding(); } else { document.getElementById("onboarding").classList.add("hidden"); renderAll(); }
+  
+  if (!STATE.profile){ 
+    onboardingStep = 0; 
+    renderOnboarding(); 
+  } else { 
+    document.getElementById("onboarding").classList.add("hidden"); 
+    renderAll(); 
+  }
 }
 async function persistUserState(){ await storeSet("user-state", { profile: STATE.profile, dmis: STATE.dmis }); }
 function renderAll(){ renderHome(); renderCoach(); renderTrack(); renderJournal(); renderGrowth(); }
@@ -783,8 +795,6 @@ function renderHome(){
 }
 
 /* ================================ COACH ==================================== */
-const QUICK_PROMPTS = ["Why might locals avoid direct eye contact during conversations?", "How can I structurally prepare for a disagreement here?", "What constitutes appropriate small talk boundaries in this culture?", "How should I navigate transitional fatigue or homesickness safely?"];
-
 function renderCoach(){
   const el = document.getElementById("screen-coach"); const p = STATE.profile;
   el.innerHTML = `<div style="margin-top:8px;"><div class="eyebrow">CULTURAL INTERACTION ANALYST</div><div class="screen-title" style="margin-top:2px; font-size:24px;">AI Deconstruction</div><div class="screen-sub"><span class="chip brass">${escapeHtml(p.home)} ➔ ${escapeHtml(p.host)}</span> ${STATE.dmis ? `<span class="chip sage" style="margin-left:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</span>` : ""}</div></div>
@@ -797,9 +807,9 @@ function renderCoach(){
     </div>`; scrollChatToBottom();
 }
 
-function selectQuickPrompt(text) {
-  sendCoachMessage(text);
-}
+function formatAiText(t){ let s = escapeHtml(t); s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); s = s.replace(/\n/g, "<br>"); return s; }
+function sendCoachMessageFromInput(){ const ta = document.getElementById("coachInput"); const text = ta.value.trim(); if (!text) return; ta.value = ""; sendCoachMessage(text); }
+function selectQuickPrompt(text) { sendCoachMessage(text); }
 
 async function sendCoachMessage(text){
   STATE.coachHistory.push({ role:"user", text }); 
@@ -931,7 +941,8 @@ function renderGrowth(){
       <div class="list-item" onclick="openQrScanner();" style="cursor:pointer;">
         <div class="li-icon">📷</div><div class="li-body"><div class="li-title">Scan QR / Barcode</div><div class="li-sub">Extended visual scanner for host artifacts</div></div>${icon('chevron',16)}
       </div>
-      <div class="list-item" onclick="openTranslate();" style="cursor:pointer;"><div class="li-icon">🗣️</div><div class="li-body"><div class="li-title">One-Tap Translation Tool</div><div class="li-sub">Rapid situational phrase alignment utility</div></div>${icon('chevron',16)}</div>
+      <div class="list-item" onclick="openTranslate();" style="cursor:pointer;">
+        <div class="li-icon">🗣️</div><div class="li-body"><div class="li-title">One-Tap Translation Tool</div><div class="li-sub">Rapid situational phrase alignment utility</div></div>${icon('chevron',16)}</div>
       <div class="list-item" onclick="openEditProfile();" style="cursor:pointer;"><div class="li-icon">⚙️</div><div class="li-body"><div class="li-title">Modify Target Route</div><div class="li-sub">Current setup: ${escapeHtml(STATE.profile.home)} ➔ ${escapeHtml(STATE.profile.host)}</div></div>${icon('chevron',16)}</div>
     </div>`;
 }
