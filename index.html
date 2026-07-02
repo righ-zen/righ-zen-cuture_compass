@@ -514,16 +514,36 @@ function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<
 function greetingWord(){ const h = new Date().getHours(); if (h < 12) return "GOOD MORNING"; if (h < 18) return "GOOD AFTERNOON"; return "GOOD EVENING"; }
 
 function compassDialSVG(stageIndex, opts){
-  opts = opts || {}; const size = opts.size || 220; const known = stageIndex !== null && stageIndex !== undefined; const idx = known ? stageIndex : 0; const cx = 100, cy = 108, r = 78; const segAngle = 180/6; let arcs = "";
-  for (let i=0;i<6;i++){
-    const a0 = -90 + i*segAngle; const a1 = -90 + (i+1)*segAngle - 2; const p0 = polar(cx,cy,r,a0), p1 = polar(cx,cy,r,a1); const stage = DMIS_STAGES[i]; const dim = known && i !== idx; const col = known ? (i===idx ? stage.color : "var(--line)") : "var(--line)";
-    arcs += `<path d="M ${p0.x} ${p0.y} A ${r} ${r} 0 0 1 ${p1.x} ${p1.y}" fill="none" stroke="${col}" stroke-width="12" stroke-linecap="round" opacity="${dim?0.4:1}"/>`;
+  opts = opts || {}; 
+  const size = opts.size || 220; 
+  const known = stageIndex !== null && stageIndex !== undefined; 
+  const idx = known ? stageIndex : 0; 
+  const cx = 100, cy = 108, r = 78; 
+  const segAngle = 180 / 6; 
+  let arcs = "";
+  
+  for (let i = 0; i < 6; i++) {
+    const a0 = -90 + i * segAngle; 
+    const a1 = -90 + (i + 1) * segAngle - 2; 
+    const p0 = polar(cx, cy, r, a0); 
+    const p1 = polar(cx, cy, r, a1); 
+    const stage = DMIS_STAGES[i]; 
+    const dim = known && i !== idx; 
+    /* 未診断時はすべてライトグレー、診断後は現在のステージの色のみ鮮やかに、他は薄く透過 */
+    const col = known ? (i === idx ? stage.color : "var(--line)") : "var(--line)";
+    arcs += `<path d="M ${p0.x} ${p0.y} A ${r} ${r} 0 0 1 ${p1.x} ${p1.y}" fill="none" stroke="${col}" stroke-width="12" stroke-linecap="round" opacity="${dim ? 0.3 : 1}"/>`;
   }
-  const needleAngle = known ? (-90 + segAngle*idx + segAngle/2) : -90 + segAngle/2;
-  return `<svg viewBox="0 0 200 140" width="${size}" height="${size*0.7}">${arcs}<circle cx="${cx}" cy="${cy}" r="7" fill="var(--ink-navy)"/><path class="needle" d="M ${cx} ${cy-58} L ${cx-4} ${cy} L ${cx+4} ${cy} Z" fill="var(--brass)" style="transform:rotate(${needleAngle+90}deg);"/></svg>`;
+  
+  /* SafariのCSSバグを回避するため、SVGのtransform属性で針を100%正確に回転 */
+  const needleAngle = known ? (-90 + segAngle * idx + segAngle / 2) : -90 + segAngle / 2;
+  return `<svg viewBox="0 0 200 140" width="${size}" height="${size*0.7}">${arcs}<circle cx="${cx}" cy="${cy}" r="7" fill="var(--ink-navy)"/><path class="needle" d="M ${cx} ${cy-58} L ${cx-4} ${cy} L ${cx+4} ${cy} Z" fill="var(--brass)" transform="rotate(${needleAngle+90} ${cx} ${cy})"/></svg>`;
 }
-function polar(cx,cy,r,angleDeg){ const a = (angleDeg-90) * Math.PI/180; return { x: cx + r*Math.cos(a), y: cy + r*Math.sin(a) }; }
 
+function polar(cx, cy, r, angleDeg) { 
+  const a = (angleDeg - 90) * Math.PI / 180; 
+  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) }; 
+}
+  
 function sparkline(values, opts){
   opts = opts || {}; const w = opts.w || 320, h = opts.h || 64, pad = 8; if (!values.length) return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}"></svg>`; const min = 1, max = 5; const stepX = values.length > 1 ? (w - pad*2)/(values.length-1) : 0;
   const pts = values.map((v,i)=>{ const x = pad + stepX*i; const y = h - pad - ((v-min)/(max-min))*(h-pad*2); return [x,y]; });
