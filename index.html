@@ -82,7 +82,6 @@
     z-index:10;
   }
 
-  /* チャットレイアウトの縦並び固定 */
   #screen-coach {
     display: flex !important;
     flex-direction: column !important;
@@ -303,7 +302,6 @@
     transition: transform 1s cubic-bezier(.22,1,.36,1); 
   }
 
-  /* ---------- チャット表示エリア（スクロール完全修正） ---------- */
   .chat-scroll {
     flex: 1 1 auto !important;
     overflow-y: auto !important;
@@ -315,7 +313,6 @@
   }
   .chat-scroll::-webkit-scrollbar { display: none; }
 
-  /* ---------- チャット入力バー（最下部に絶対固定） ---------- */
   .chat-inputbar{
     position: absolute !important;
     bottom: 0 !important;
@@ -338,7 +335,6 @@
     border-radius: 24px;
   }
 
-  /* ---------- ダミースキャン画面 ---------- */
   .camera-view {
     width: 100%;
     height: 240px;
@@ -447,7 +443,7 @@
 const memoryStore = {};
 async function storeGet(key){
   try{
-    if (window.storage && window.storage.get){
+    if (window.storage && window.window.storage.get){
       const r = await window.storage.get(key, false);
       return r ? JSON.parse(r.value) : null;
     }
@@ -632,10 +628,10 @@ function renderOnboarding(){
   if (onboardingStep === 0){
     body = `<div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:24px;">
         ${compassDialSVG(null, {size:190})}
-        <div class="eyebrow" style="margin-top:166px; color:var(--brass-light);">DMIS-Guided Intercultural Coaching</div>
+        <div class="eyebrow" style="margin-top:16px; color:var(--brass-light);">DMIS-Guided Intercultural Coaching</div>
         <h1 style="font-family:var(--display); font-weight:900; font-size:34px; margin:12px 0 6px;">CultureCompass</h1>
         <p style="font-size:15px; line-height:1.6; color:rgba(247,242,231,0.8); max-width:290px;">
-          An intercultural compass built to help you structurally understand cultures, not just survive them. A short setup, then your journey begins.
+          Navigate new cultures. Understand the unwritten rules.
         </p>
       </div>`;
     footerHtml = `<button class="btn btn-brass btn-block" onclick="onboardingStep=1; renderOnboarding();">Get Started</button>`;
@@ -677,11 +673,6 @@ function renderOnboarding(){
   }
   scroll.innerHTML = body; footer.innerHTML = footerHtml;
 }
-
-function obSaveName(){ onboardingDraft.name = document.getElementById("ob-name").value.trim() || "Traveler"; onboardingStep = 2; renderOnboarding(); }
-function obSaveHome(){ const v = document.getElementById("ob-home").value; if (!v) return; onboardingDraft.home = v; onboardingStep = 3; renderOnboarding(); }
-function obSaveHost(){ const v = document.getElementById("ob-host").value; if (!v) return; onboardingDraft.host = v; onboardingStep = 4; renderOnboarding(); }
-async function finishOnboarding(){ STATE.profile = { name: onboardingDraft.name, home: onboardingDraft.home, host: onboardingDraft.host, createdAt: todayStr() }; await persistUserState(); document.getElementById("onboarding").classList.add("hidden"); renderAll(); }
 
 function openModal(html){ document.getElementById("modalSheet").innerHTML = html; document.getElementById("modalOverlay").classList.add("open"); }
 function closeModal(){ document.getElementById("modalOverlay").classList.remove("open"); }
@@ -849,7 +840,8 @@ async function sendCoachMessage(text){
     fullReply = "In many high-context cultural networks, sustained direct eye contact can be subconsciously perceived as confrontational, intrusive, or challenging to authority. Instead, individuals frequently soften their gaze or look slightly away to convey deep respect and maintain absolute interpersonal harmony (**Wa**). It is a calculated act of courtesy, not avoidance.";
   } else if (text.includes("disagreement")) {
     fullReply = "To successfully navigate conflict here, steer completely away from blunt, public low-context debates. Frame your critique collaboratively rather than direct confrontation. Use softening buffer phrases like *'I see your point, but perhaps we could also look at...'* to preserve individual face (**Mianzi** or **Kao**) while maintaining strong relationship capital.";
-  } else if (text.includes("small talk")) { FullReply = "Small talk boundaries vary sharply. While some low-context destinations prefer light transactional topics (weather, sports), other collective networks use seemingly intrusive personal questions (age, marital status, family) as a genuine tool to establish trust and map out your relational context. Focus on shared baseline topics to test comfort levels first.";
+  } else if (text.includes("small talk")) {
+    fullReply = "Small talk boundaries vary sharply. While some low-context destinations prefer light transactional topics (weather, sports), other collective networks use seemingly intrusive personal questions (age, marital status, family) as a genuine tool to establish trust and map out your relational context. Focus on shared baseline topics to test comfort levels first.";
   } else if (text.includes("fatigue") || text.includes("homesick")) {
     fullReply = "Experiencing transitional fatigue or homesickness is a completely normal part of the **Culture Shock Curve**. Your cognitive engine is working on overdrive 24/7 to decode unfamiliar social algorithms. Give yourself immense credit—stepping outside your native ethnocentric frame is heavy mental lifting. Rest, and pace yourself!";
   }
@@ -969,7 +961,7 @@ function renderQuiz(){
   openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
     <div class="eyebrow">DMIS Evaluation · ${quizIndex+1} / ${total}</div><div class="quiz-progress" style="margin-top:12px;"><div class="quiz-progress-fill" style="width:${pct}%;"></div></div>
     <p style="font-size:18px; line-height:1.5; font-family:var(--display); font-weight:800; margin:4px 0 18px; color:var(--ink-navy);">${escapeHtml(DMIS_QUESTIONS[quizIndex])}</p>
-    ${["Strongly Disagree","Disagree","Neutral","Agree","Strongly Agree"].map((label,i)=>`<button class="quiz-opt" style="display:block; width:100%; text-align:left; background:#fff; border:2px solid var(--line); border-radius:16px; padding:14px; margin-bottom:10px; font-size:14.5px; font-weight:700; cursor:pointer;" onclick="answerQuiz(${i+1})">${label}</button>`);
+    ${["Strongly Disagree","Disagree","Neutral","Agree","Strongly Agree"].map((label,i)=>`<button class="quiz-opt" style="display:block; width:100%; text-align:left; background:#fff; border:2px solid var(--line); border-radius:16px; padding:14px; margin-bottom:10px; font-size:14.5px; font-weight:700; cursor:pointer;" onclick="answerQuiz(${i+1})">${label}</button>`).join("")}`);
 }
 function answerQuiz(val){ quizAnswers[quizIndex] = val; if (quizIndex < DMIS_QUESTIONS.length - 1){ quizIndex++; renderQuiz(); } else { finishQuiz(); } }
 async function finishQuiz(){
