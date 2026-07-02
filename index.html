@@ -82,7 +82,7 @@
     z-index:10;
   }
 
-  /* コーチ画面用の縦並びレイアウト構造 */
+  /* コーチ画面専用：入力欄を最下部に固定し、上部ディスカッションエリアのみを独立スクロールさせる包含定義 */
   #screen-coach {
     display: flex !important;
     flex-direction: column !important;
@@ -194,8 +194,8 @@
     transition:color 0.15s ease;
   }
   .tab svg{width:22px; height:22px; stroke:var(--text-mute); stroke-width:2.2; transition:stroke 0.15s ease;}
-  .tab.active{color:var(--ink-navy);}
-  .tab.active svg{stroke:var(--brass); fill: rgba(200,155,60,0.1);}
+  .tabbar .tab.active{color:var(--ink-navy) !important;}
+  .tabbar .tab.active svg{stroke:var(--brass) !important; fill: rgba(200,155,60,0.1) !important;}
 
   /* ---------- onboarding overlay ---------- */
   .overlay{
@@ -303,19 +303,19 @@
     transition: transform 1s cubic-bezier(.22,1,.36,1); 
   }
 
-  /* ---------- チャット表示エリア ---------- */
+  /* ---------- チャット表示スクロールエリアの包含切り分け ---------- */
   .chat-scroll {
     flex: 1 1 auto !important;
     overflow-y: auto !important;
     scrollbar-width: none;
-    padding-bottom: 90px !important;
+    padding-bottom: 90px !important; /* 入力パネル裏への隠れ込みを防止 */
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
   .chat-scroll::-webkit-scrollbar { display: none; }
 
-  /* ---------- チャット入力バー ---------- */
+  /* ---------- チャット入力パネルを領域底辺にがっちり固定 ---------- */
   .chat-inputbar{
     position: absolute !important;
     bottom: 0 !important;
@@ -338,7 +338,7 @@
     border-radius: 24px;
   }
 
-  /* ---------- ダミースキャン画面 ---------- */
+  /* ---------- カメラ起動ダミー画面用CSS ---------- */
   .camera-view {
     width: 100%;
     height: 240px;
@@ -489,6 +489,10 @@ const DMIS_QUESTIONS = [
   "I feel reasonably steady and self-contained, not just tolerant, when I'm the obvious cultural outsider in a room."
 ];
 
+function scoreToStageIndex(total){
+  if (total <= 20) return 0; if (total <= 28) return 1; if (total <= 36) return 2; if (total <= 44) return 3; if (total <= 52) return 4; return 5;
+}
+
 const MOODS = [
   { v:1, e:"😫", label:"Overwhelmed" },
   { v:2, e:"😕", label:"Slightly Uneasy" },
@@ -582,27 +586,11 @@ function classifyPhase(entries){
 }
 
 async function boot(){
-  /* スマホのストレージにこびりついた古いバグデータを強制消去するフック */
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('v') === 'clear') {
-    await Promise.all([storeSet("user-state", null), storeSet("tracker-entries", []), storeSet("journal-entries", []), storeSet("challenges-state", null), storeSet("coach-history", [])]);
-    window.location.href = window.location.pathname; 
-    return;
-  }
-
   const [userState, tracker, journal, challenges, coachHistory] = await Promise.all([storeGet("user-state"), storeGet("tracker-entries"), storeGet("journal-entries"), storeGet("challenges-state"), storeGet("coach-history")]);
   if (userState){ STATE.profile = userState.profile || null; STATE.dmis = userState.dmis || null; }
   STATE.tracker = tracker || []; STATE.journal = journal || []; STATE.challenges = challenges || { completedDates:{}, streak:0, lastDate:null }; STATE.coachHistory = coachHistory || [];
-  
   buildTabBar();
-  
-  if (!STATE.profile){ 
-    onboardingStep = 0; 
-    renderOnboarding(); 
-  } else { 
-    document.getElementById("onboarding").classList.add("hidden"); 
-    renderAll(); 
-  }
+  if (!STATE.profile){ onboardingStep = 0; renderOnboarding(); } else { document.getElementById("onboarding").classList.add("hidden"); renderAll(); }
 }
 async function persistUserState(){ await storeSet("user-state", { profile: STATE.profile, dmis: STATE.dmis }); }
 function renderAll(){ renderHome(); renderCoach(); renderTrack(); renderJournal(); renderGrowth(); }
@@ -610,20 +598,15 @@ function renderAll(){ renderHome(); renderCoach(); renderTrack(); renderJournal(
 function buildTabBar(){
   const bar = document.getElementById("tabbar");
   bar.innerHTML = TABS.map(t => `<button class="tab" id="tab-${t.id}" onclick="switchTab('${t.id}')">${icon(t.icon,22)}<span>${t.label}</span></button>`).join("");
-  const currentTabButton = document.getElementById("tab-" + activeTab);
-  if (currentTabButton) currentTabButton.classList.add("active");
+  document.getElementById("tab-" + activeTab).classList.add("active");
 }
 
 function switchTab(id){
   activeTab = id; 
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); 
-  const targetScreen = document.getElementById("screen-"+id);
-  if (targetScreen) targetScreen.classList.add("active");
-  
+  document.getElementById("screen-"+id).classList.add("active");
   document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
-  const targetTab = document.getElementById("tab-" + id);
-  if (targetTab) targetTab.classList.add("active");
-  
+  document.getElementById("tab-" + id).classList.add("active");
   if (id==="coach") scrollChatToBottom();
 }
 
@@ -634,7 +617,7 @@ function renderOnboarding(){
   if (onboardingStep === 0){
     body = `<div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:24px;">
         ${compassDialSVG(null, {size:190})}
-        <div class="eyebrow" style="margin-top:16px; color:var(--brass-light);">DMIS-Guided Intercultural Coaching</div>
+        <div class="eyebrow" style="margin-top:166px; color:var(--brass-light);">DMIS-Guided Intercultural Coaching</div>
         <h1 style="font-family:var(--display); font-weight:900; font-size:34px; margin:12px 0 6px;">CultureCompass</h1>
         <p style="font-size:15px; line-height:1.6; color:rgba(247,242,231,0.8); max-width:290px;">
           Navigate new cultures. Understand the unwritten rules.
@@ -675,74 +658,24 @@ function renderOnboarding(){
       <p style="font-size:14px; line-height:1.6; color:rgba(247,242,231,0.7); margin-top:16px;">
         Your AI cultural analyst is calibrated. You can take the 2-minute developmental self-assessment from the Growth tab at any time to map your baseline sensitivity.
       </p>`;
-    window.scrollTo(0,0);
     footerHtml = `<button class="btn btn-brass btn-block" onclick="finishOnboarding();">Enter CultureCompass</button>`;
   }
   scroll.innerHTML = body; footer.innerHTML = footerHtml;
 }
 
 function openEditProfile(){
-  openModal('<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>' +
-    '<div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; color:var(--ink-navy);">Settings & Coordinates</div>' +
-    '<p class="screen-sub" style="margin-bottom:16px;">Calibrate your structural routing parameters.</p>' +
-    '<div class="field"><label class="field-label">Your Name</label><input type="text" id="ep-name" value="' + escapeHtml(STATE.profile.name) + '"></div>' +
-    '<div class="field"><label class="field-label">HOME Culture</label><select id="ep-home">' + countryOptions(STATE.profile.home) + '</select></div>' +
-    '<div class="field"><label class="field-label">HOST Culture</label><select id="ep-host">' + countryOptions(STATE.profile.host) + '</select></div>' +
-    '<button class="btn btn-primary btn-block" style="margin-bottom:12px;" onclick="saveEditProfile();">Save Changes</button>' +
-    '<div class="section-label" style="margin:20px 0 10px;">Presentation Utilities</div>' +
-    '<div style="display:flex; gap:10px;">' +
-      '<button class="btn btn-ghost" style="flex:1; color:var(--sage); border-color:var(--sage); box-shadow:none; font-size:13px; padding:10px;" onclick="injectDemoData();">📊 Load Demo Data</button>' +
-      '<button class="btn btn-ghost" style="flex:1; color:var(--rust); border-color:var(--rust); box-shadow:none; font-size:13px;" onclick="resetApp();">🗑️ Reset App</button>' +
-    '</div>');
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
+    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; color:var(--ink-navy);">Edit Profile</div>
+    <p class="screen-sub" style="margin-bottom:16px;">Updating your coordinates automatically recalculates your analyst's contextual frame.</p>
+    <div class="field"><label class="field-label">Your Name</label><input type="text" id="ep-name" value="${escapeHtml(STATE.profile.name)}"></div>
+    <div class="field"><label class="field-label">HOME Culture</label><select id="ep-home">${countryOptions(STATE.profile.home)}</select></div>
+    <div class="field"><label class="field-label">HOST Culture</label><select id="ep-host">${countryOptions(STATE.profile.host)}</select></div>
+    <button class="btn btn-primary btn-block" onclick="saveEditProfile();">Save Changes</button>`);
 }
 async function saveEditProfile(){ STATE.profile.name = document.getElementById("ep-name").value.trim() || STATE.profile.name; STATE.profile.home = document.getElementById("ep-home").value; STATE.profile.host = document.getElementById("ep-host").value; await persistUserState(); closeModal(); renderAll(); }
 
-async function injectDemoData(){
-  STATE.dmis = { stageIndex: 3, score: 44, date: todayStr() };
-  STATE.tracker = [
-    {id: "1", date: "2026-06-20", mood: 4, note: "Arrived at host campus! Energetic vibe."},
-    {id: "2", date: "2026-06-22", mood: 5, note: "Met some great peer network groups."},
-    {id: "3", date: "2026-06-24", mood: 3, note: "Slight bureaucratic friction with registration."},
-    {id: "4", date: "2026-06-26", mood: 2, note: "Communication styles here feel confusing today."},
-    {id: "5", date: "2026-06-28", mood: 2, note: "Missed family group threads. Feeling slightly isolated."},
-    {id: "6", date: "2026-06-30", mood: 3, note: "Deconstructed the friction via AI Coach. Clicking."},
-    {id: "7", date: "2026-07-02", mood: 4, note: "Built solid functional baseline routines today."}
-  ];
-  STATE.journal = [
-    {id: "j1", date: "2026-06-25", prompt: "Describe a moment today when you noticed a cultural difference.", text: "Noticed heavy high-context processing loops during our class group assignment setup. People heavily navigate face-saving parameters rather than stating explicit low-context critiques."},
-    {id: "j2", date: "2026-06-29", prompt: "What implicit assumption did you catch yourself making today?", text: "Caught myself assuming someone was being dismissive by breaking direct eye contact, but deconstructed it as an act of polite, deep-rooted collective deference."}
-  ];
-  STATE.challenges.completedDates = {"2026-07-01": true, "2026-07-02": true};
-  STATE.challenges.streak = 2;
-  await Promise.all([persistUserState(), storeSet("tracker-entries", STATE.tracker), storeSet("journal-entries", STATE.journal), storeSet("challenges-state", STATE.challenges)]);
-  closeModal(); renderAll();
-}
-
-async function resetApp(){
-  if(confirm("Reset entire local database session?")){
-    await Promise.all([storeSet("user-state", null), storeSet("tracker-entries", []), storeSet("journal-entries", []), storeSet("challenges-state", null), storeSet("coach-history", [])]);
-    window.location.reload();
-  }
-}
-
-function openQrScanner(){
-  openModal('<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>' +
-    '<div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; margin-bottom:4px;">Scan QR / Barcode</div>' +
-    '<p class="screen-sub" style="margin-bottom:16px;">Calibration & Extended Context Analyzer</p>' +
-    '<div class="camera-view">' +
-      '<div class="scan-frame"></div>' +
-      '<p style="font-family:var(--mono); font-size:12px; font-weight:600; color:rgba(255,255,255,0.7); position:absolute; bottom:16px;">Align code within the frame</p>' +
-    '</div>' +
-    '<div style="height:16px;"></div>' +
-    '<button class="btn btn-primary btn-block" onclick="triggerMockScan();">⚡ Simulate Scan Match</button>');
-}
-
-function triggerMockScan(){
-  const frame = document.querySelector('.scan-frame');
-  if(frame) frame.style.borderColor = "var(--sage)";
-  alert("Code recognized! [ID: CC-4091] -> Calibration unlock prompt triggered.");
-  closeModal();
-}
+function openModal(html){ document.getElementById("modalSheet").innerHTML = html; document.getElementById("modalOverlay").classList.add("open"); }
+function closeModal(){ document.getElementById("modalOverlay").classList.remove("open"); }
 
 /* ================================ HOME ==================================== */
 function renderHome(){
@@ -782,23 +715,31 @@ function renderHome(){
 
     <div class="section-label">QUICK ACCESS</div>
     <div class="card" style="padding:8px 12px;">
-      <div class="list-item" onclick="openQrScanner();" style="cursor:pointer;">
-        <div class="li-icon" style="background:#f3e5f5;">📷</div><div class="li-body"><div class="li-title">Scan QR / Barcode</div><div class="li-sub">Analyze host artifacts or unlock coordinates</div></div>${icon('chevron',16)}
-      </div>
       <div class="list-item" onclick="switchTab('coach')" style="cursor:pointer;">
         <div class="li-icon" style="background:#e8f0fe;">💬</div><div class="li-body"><div class="li-title">Consult AI Cultural Coach</div><div class="li-sub">Deconstruct subtle friction points structurally</div></div>${icon('chevron',16)}
       </div>
       <div class="list-item" onclick="switchTab('track')" style="cursor:pointer;">
         <div class="li-icon" style="background:#e6f4ea;">📈</div><div class="li-body"><div class="li-title">Log Current State</div><div class="li-sub">Map everyday psychological adaptation fluctuations</div></div>${icon('chevron',16)}
       </div>
+      <div class="list-item" onclick="switchTab('journal')" style="cursor:pointer;">
+        <div class="li-icon" style="background:#fef7e0;">📝</div><div class="li-body"><div class="li-title">${lastJournal ? 'Continue Reflection Journal' : 'Write First Entry'}</div><div class="li-sub">${lastJournal ? escapeHtml(lastJournal.text.slice(0,35))+'…' : 'Answer structured prompts to build metacognition'}</div></div>${icon('chevron',16)}
+      </div>
     </div>`;
+}
+
+async function toggleChallenge(dateStr){
+  const c = STATE.challenges;
+  if (c.completedDates[dateStr]){ delete c.completedDates[dateStr]; } else { c.completedDates[dateStr] = true; let streak = 0; let d = new Date(dateStr + "T00:00:00"); while (c.completedDates[todayStr(d)]){ streak++; d.setDate(d.getDate()-1); } c.streak = streak; c.lastDate = dateStr; }
+  if (!c.completedDates[dateStr]) { let streak = 0; let d = new Date(todayStr()+"T00:00:00"); while (c.completedDates[todayStr(d)]){ streak++; d.setDate(d.getDate()-1); } c.streak = streak; }
+  await storeSet("challenges-state", c); renderHome(); renderGrowth();
 }
 
 /* ================================ COACH ==================================== */
 function renderCoach(){
   const el = document.getElementById("screen-coach"); const p = STATE.profile;
   
-  /* サンプル質問ボタンの生成方法を「最もクラッシュしない古い安全なループ手法」へ完全書き換え */
+  /* Safari構文クラッシュの主犯：属性内へのJSONオブジェクト直書きを完全撤廃 */
+  /* インデックス(0,1,2,3)のみを引数に渡す、一番手堅く古典的なループ組み立てに変更 */
   let promptsHtml = "";
   for (let i = 0; i < QUICK_PROMPTS.length; i++) {
     promptsHtml += '<button class="btn btn-ghost" style="font-size:14px; text-align:left; padding:14px; margin-bottom:2px;" onclick="selectQuickPromptIndex(' + i + ')">' + escapeHtml(QUICK_PROMPTS[i]) + '</button>';
@@ -813,6 +754,10 @@ function renderCoach(){
       <button class="chat-send" style="background:var(--brass); border:none; border-radius:50%; width:46px; height:46px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex: 0 0 auto;" onclick="sendCoachMessageFromInput();">${icon('send',18)}</button>
     </div>`; scrollChatToBottom();
 }
+
+function scrollChatToBottom(){ const s = document.getElementById("chatScroll"); if (s) s.scrollTop = s.scrollHeight; }
+function formatAiText(t){ let s = escapeHtml(t); s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); s = s.replace(/\n/g, "<br>"); return s; }
+function sendCoachMessageFromInput(){ const ta = document.getElementById("coachInput"); const text = ta.value.trim(); if (!text) return; ta.value = ""; sendCoachMessage(text); }
 
 function selectQuickPromptIndex(idx) {
   if (QUICK_PROMPTS[idx]) {
@@ -845,6 +790,7 @@ async function sendCoachMessage(text){
     fullReply = "Experiencing transitional fatigue or homesickness is a completely normal part of the **Culture Shock Curve**. Your cognitive engine is working on overdrive 24/7 to decode unfamiliar social algorithms. Give yourself immense credit—stepping outside your native ethnocentric frame is heavy mental lifting. Rest, and pace yourself!";
   }
 
+  /* カタカタと文字が流れるストリーミング演出を追加（1.8秒のシンキングタイム後） */
   setTimeout(() => {
     const tb = document.getElementById("typingBubble");
     if (tb) tb.remove();
@@ -880,7 +826,7 @@ async function sendCoachMessage(text){
         STATE.coachHistory.push({ role:"assistant", text: formattedFullReply });
         await storeSet("coach-history", STATE.coachHistory);
       }
-    }, 25);
+    }, 22);
 
   }, 1800);
 }
@@ -947,11 +893,8 @@ function renderGrowth(){
     <div class="card" style="padding:8px 12px;">${CHALLENGES.map((c,i) => { const isToday = i === challengeIdx; const doneToday = isToday && !!STATE.challenges.completedDates[today]; return `<div class="list-item"><div class="li-icon" style="font-size:14px;">${doneToday ? '✅' : (isToday ? '📍' : '•')}</div><div class="li-body"><div class="li-title" style="${isToday?'font-weight:900; color:var(--ink-navy);':'color:var(--text-mute); font-weight:600;'}">${escapeHtml(c)}</div>${isToday ? `<div class="li-sub" style="color:var(--brass); font-weight:900;">Active Today</div>` : ""}</div></div>`; }).join("")}</div>
     <div class="section-label">UTILITIES</div>
     <div class="card" style="padding:8px 12px;">
-      <div class="list-item" onclick="openQrScanner();" style="cursor:pointer;">
-        <div class="li-icon">📷</div><div class="li-body"><div class="li-title">Scan QR / Barcode</div><div class="li-sub">Extended visual scanner for host artifacts</div></div>${icon('chevron',16)}
-      </div>
-      <div class="list-item" onclick="openTranslate();" style="cursor:pointer;">
-        <div class="li-icon">🗣️</div><div class="li-body"><div class="li-title">One-Tap Translation Tool</div><div class="li-sub">Rapid situational phrase alignment utility</div></div>${icon('chevron',16)}</div>
+      <div class="list-item" onclick="openQrScanner();" style="cursor:pointer;"><div class="li-icon">📷</div><div class="li-body"><div class="li-title">Scan QR / Barcode</div><div class="li-sub">Extended visual scanner for host artifacts</div></div>${icon('chevron',16)}</div>
+      <div class="list-item" onclick="openTranslate();" style="cursor:pointer;"><div class="li-icon">🗣️</div><div class="li-body"><div class="li-title">One-Tap Translation Tool</div><div class="li-sub">Rapid situational phrase alignment utility</div></div>${icon('chevron',16)}</div>
       <div class="list-item" onclick="openEditProfile();" style="cursor:pointer;"><div class="li-icon">⚙️</div><div class="li-body"><div class="li-title">Modify Target Route</div><div class="li-sub">Current setup: ${escapeHtml(STATE.profile.home)} ➔ ${escapeHtml(STATE.profile.host)}</div></div>${icon('chevron',16)}</div>
     </div>`;
 }
@@ -994,6 +937,50 @@ async function runTranslate(){
     resultEl.innerHTML = `<div class="card" style="background:var(--parchment-dim); border:none; margin-top:14px; box-shadow:none;"><div class="eyebrow" style="margin-bottom:6px;">${lang.toUpperCase()}</div><p style="font-size:15.5px; font-weight:800; margin:0; line-height:1.55; color:var(--ink-navy);">${escapeHtml(out || "Translation string mapping failed.")}</p></div>`;
   }catch(e){
     resultEl.innerHTML = `<p style="margin-top:14px; font-size:13.5px; font-weight:700; color:var(--rust);">Data error. Please verify network access and try again.</p>`;
+  }
+}
+
+/* プレゼン・デモ支援用拡張メニュー（歯車パネル内統合） */
+function openEditProfile(){
+  openModal('<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>' +
+    '<div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; color:var(--ink-navy);">Settings & Coordinates</div>' +
+    '<p class="screen-sub" style="margin-bottom:16px;">Calibrate your structural routing parameters.</p>' +
+    '<div class="field"><label class="field-label">Your Name</label><input type="text" id="ep-name" value="' + escapeHtml(STATE.profile.name) + '"></div>' +
+    '<div class="field"><label class="field-label">HOME Culture</label><select id="ep-home">' + countryOptions(STATE.profile.home) + '</select></div>' +
+    '<div class="field"><label class="field-label">HOST Culture</label><select id="ep-host">' + countryOptions(STATE.profile.host) + '</select></div>' +
+    '<button class="btn btn-primary btn-block" style="margin-bottom:12px;" onclick="saveEditProfile();">Save Changes</button>' +
+    '<div class="section-label" style="margin:20px 0 10px;">Presentation Utilities</div>' +
+    '<div style="display:flex; gap:10px;">' +
+      '<button class="btn btn-ghost" style="flex:1; color:var(--sage); border-color:var(--sage); box-shadow:none; font-size:13px; padding:10px;" onclick="injectDemoData();">📊 Load Demo Data</button>' +
+      '<button class="btn btn-ghost" style="flex:1; color:var(--rust); border-color:var(--rust); box-shadow:none; font-size:13px;" onclick="resetApp();">🗑️ Reset App</button>' +
+    '</div>');
+}
+
+async function injectDemoData(){
+  STATE.dmis = { stageIndex: 3, score: 44, date: todayStr() };
+  STATE.tracker = [
+    {id: "1", date: "2026-06-20", mood: 4, note: "Arrived at host campus! Energetic vibe."},
+    {id: "2", date: "2026-06-22", mood: 5, note: "Met some great peer network groups."},
+    {id: "3", date: "2026-06-24", mood: 3, note: "Slight bureaucratic friction with registration."},
+    {id: "4", date: "2026-06-26", mood: 2, note: "Communication styles here feel confusing today."},
+    {id: "5", date: "2026-06-28", mood: 2, note: "Missed family group threads. Feeling slightly isolated."},
+    {id: "6", date: "2026-06-30", mood: 3, note: "Deconstructed the friction via AI Coach. Clicking."},
+    {id: "7", date: "2026-07-02", mood: 4, note: "Built solid functional baseline routines today."}
+  ];
+  STATE.journal = [
+    {id: "j1", date: "2026-06-25", prompt: "Describe a moment today when you noticed a cultural difference.", text: "Noticed heavy high-context processing loops during our class group assignment setup. People heavily navigate face-saving parameters rather than stating explicit low-context critiques."},
+    {id: "j2", date: "2026-06-29", prompt: "What implicit assumption did you catch yourself making today?", text: "Caught myself assuming someone was being dismissive by breaking direct eye contact, but deconstructed it as an act of polite, deep-rooted collective deference."}
+  ];
+  STATE.challenges.completedDates = {"2026-07-01": true, "2026-07-02": true};
+  STATE.challenges.streak = 2;
+  await Promise.all([persistUserState(), storeSet("tracker-entries", STATE.tracker), storeSet("journal-entries", STATE.journal), storeSet("challenges-state", STATE.challenges)]);
+  closeModal(); renderAll();
+}
+
+async function resetApp(){
+  if(confirm("Reset entire local database session?")){
+    await Promise.all([storeSet("user-state", null), storeSet("tracker-entries", []), storeSet("journal-entries", []), storeSet("challenges-state", null), storeSet("coach-history", [])]);
+    window.location.reload();
   }
 }
 
