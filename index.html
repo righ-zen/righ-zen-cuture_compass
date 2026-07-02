@@ -55,11 +55,13 @@ body{
     position:relative;
     width:100vw;
     height:100vh;
-    background: var(--parchment); /* ここをクリーム色にすることで、最上部がクリーム色になります */
+    background: var(--parchment); /* 最上部をクリーム色にする */[cite: 1]
     overflow:hidden;
     display:flex;
     flex-direction:column;
-    /* iPhoneのステータスバーを避ける安全な余白を確保 */
+    /* はみ出しを防ぐ魔法の一行（余白を高さの内側に含める設定） */
+    box-sizing: border-box; 
+    /* iPhoneのステータスバーを避ける安全な余白 */
     padding-top: 44px; 
   }
   .notch{
