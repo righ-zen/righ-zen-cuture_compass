@@ -82,11 +82,9 @@
     z-index:10;
   }
 
+  /* チャット画面だけ下部の入力バーの高さ(70px)分の余白を空ける */
   #screen-coach {
-    display: flex !important;
-    flex-direction: column !important;
-    padding-bottom: 0 !important;
-    overflow: hidden !important;
+    padding-bottom: 80px !important;
   }
 
   .screen-title{
@@ -193,8 +191,8 @@
     transition:color 0.15s ease;
   }
   .tab svg{width:22px; height:22px; stroke:var(--text-mute); stroke-width:2.2; transition:stroke 0.15s ease;}
-  .tabbar .tab.active{color:var(--ink-navy) !important;}
-  .tabbar .tab.active svg{stroke:var(--brass) !important; fill: rgba(200,155,60,0.1) !important;}
+  .tab.active{color:var(--ink-navy);}
+  .tab.active svg{stroke:var(--brass); fill: rgba(200,155,60,0.1);}
 
   /* ---------- onboarding overlay ---------- */
   .overlay{
@@ -299,70 +297,31 @@
     justify-content: center;
   }
   .needle{ 
+    transform-origin: 100px 108px !important; 
     transition: transform 1s cubic-bezier(.22,1,.36,1); 
   }
 
-  .chat-scroll {
-    flex: 1 1 auto !important;
-    overflow-y: auto !important;
-    scrollbar-width: none;
-    padding-bottom: 90px !important;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .chat-scroll::-webkit-scrollbar { display: none; }
-
+  /* ---------- チャット入力バーの位置を画面最下部に完全固定 ---------- */
   .chat-inputbar{
-    position: absolute !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    background: var(--parchment);
-    padding: 12px 20px 16px 20px;
-    border-top: 2px solid var(--line);
-    z-index: 50;
+    position:absolute !important;
+    bottom:0 !important;
+    left:0 !important;
+    width:100% !important;
+    display:flex;
+    gap:8px;
+    align-items:center;
+    background:var(--parchment);
+    padding:12px 20px 16px 20px;
+    border-top: 1px solid rgba(0,0,0,0.04);
+    z-index:50;
   }
   .chat-inputbar textarea{
-    resize: none;
-    max-height: 46px;
-    min-height: 46px;
-    font-size: 14.5px;
-    padding: 12px 14px;
-    border-radius: 24px;
-  }
-
-  /* ---------- ダミースキャン画面 ---------- */
-  .camera-view {
-    width: 100%;
-    height: 240px;
-    background: #111;
-    border-radius: 20px;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    border: 2px solid var(--ink-navy);
-  }
-  .scan-frame {
-    width: 140px;
-    height: 140px;
-    border: 3px solid var(--brass);
-    border-radius: 16px;
-    position: relative;
-    box-shadow: 0 0 0 999px rgba(0,0,0,0.5);
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0% { opacity: 0.7; }
-    50% { opacity: 1; }
-    100% { opacity: 0.7; }
+    resize:none;
+    max-height:46px;
+    min-height:46px;
+    font-size:14.5px;
+    padding:12px 14px;
+    border-radius:24px;
   }
 
   /* ---------- misc UI atoms ---------- */
@@ -451,14 +410,13 @@ async function storeGet(key){
   }catch(e){}
   return memoryStore.hasOwnProperty(key) ? memoryStore[key] : null;
 }
-/* storeSetの無限再帰バグを修正 (引数を3つにしてwindow.storage.setと差別化) */
 async function storeSet(key, value){
   memoryStore[key] = value;
-  try{
-    if (window.storage && window.storage.set){
+  try {
+    if (window.storage && window.storage.set) {
       await window.storage.set(key, JSON.stringify(value), false);
     }
-  }catch(e){}
+  } catch(e) {}
 }
 
 const COUNTRIES = ["Japan","United States","China","South Korea","India","Vietnam","Indonesia","Philippines","Thailand","Taiwan","United Kingdom","Germany","France","Italy","Spain","Netherlands","Sweden","Poland","Russia","Turkey","Brazil","Mexico","Argentina","Canada","Australia","New Zealand","Nigeria","Kenya","South Africa","Egypt","Saudi Arabia","United Arab Emirates","Iran","Israel"];
@@ -468,7 +426,7 @@ const DMIS_STAGES = [
   { name:"Defense", group:"Ethnocentric", color:"var(--rust)", blurb:"Difference is noticed but experienced as a threat, often leading to 'us vs. them' thinking or an assumption of cultural superiority." },
   { name:"Minimization", group:"Ethnocentric", color:"var(--brass)", blurb:"Surface differences are visible, but deep down there is a strong insistence that 'we are all the same,' which can flatten critical cultural nuances." },
   { name:"Acceptance", group:"Ethnorelative", color:"var(--sage)", blurb:"Other cultures are recognized as genuinely different and equally legitimate ways of organizing reality — not better or worse, just different." },
-  { name:"Adaptation", group:"Ethnorelative", color:"var(--sage)", blurb:"You can consciously shift perspective and communication styles to interact effectively, seeing situations through more than one cultural lens." },
+  { name:"Adaptation", group:"Ethnorelative", color:"var(--sage)", blurb:"You can consciously shift perspective and behavior to communicate effectively, seeing situations through more than one cultural frame." },
   { name:"Integration", group:"Ethnorelative", color:"var(--sage)", blurb:"Cultural frames become fluid parts of identity — you move between them naturally, depending on context." }
 ];
 
@@ -486,6 +444,10 @@ const DMIS_QUESTIONS = [
   "I notice cultural influences on my own behavior, not just on other people's.",
   "I feel reasonably steady and self-contained, not just tolerant, when I'm the obvious cultural outsider in a room."
 ];
+
+function scoreToStageIndex(total){
+  if (total <= 20) return 0; if (total <= 28) return 1; if (total <= 36) return 2; if (total <= 44) return 3; if (total <= 52) return 4; return 5;
+}
 
 const MOODS = [
   { v:1, e:"😫", label:"Overwhelmed" },
@@ -523,14 +485,6 @@ const JOURNAL_PROMPTS = [
   "Free write — anything currently on your mind regarding your cultural adjustment process."
 ];
 
-/* コーチ画面用のクイックプロンプト配列をここで確実に定義 */
-const QUICK_PROMPTS = [
-  "Why might locals avoid direct eye contact during conversations?",
-  "How can I structurally prepare for a disagreement here?",
-  "What constitutes appropriate small talk boundaries in this culture?",
-  "How should I navigate transitional fatigue or homesickness safely?"
-];
-
 const ICONS = {
   home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H10v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V20h3.5a1 1 0 0 0 1-1v-9"/>',
   coach: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z"/>',
@@ -542,8 +496,7 @@ const ICONS = {
   check: '<path d="M4 12.5 9 17l11-11"/>',
   chevron: '<path d="M9 5l7 7-7 7"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
-  translate: '<path d="M4 5h9M8 3v2M6 5c.3 3.2 2 5.7 5 7.3M11 5c-.7 2.3-2 4-4 5.3M13 21l4-9 4 9M14.8 18h4.4"/>',
-  camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>'
+  translate: '<path d="M4 5h9M8 3v2M6 5c.3 3.2 2 5.7 5 7.3M11 5c-.7 2.3-2 4-4 5.3M13 21l4-9 4 9M14.8 18h4.4"/>'
 };
 function icon(name, size){ return `<svg viewBox="0 0 24 24" width="${size||22}" height="${size||22}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`; }
 
@@ -567,7 +520,7 @@ function compassDialSVG(stageIndex, opts){
     arcs += `<path d="M ${p0.x} ${p0.y} A ${r} ${r} 0 0 1 ${p1.x} ${p1.y}" fill="none" stroke="${col}" stroke-width="12" stroke-linecap="round" opacity="${dim?0.4:1}"/>`;
   }
   const needleAngle = known ? (-90 + segAngle*idx + segAngle/2) : -90 + segAngle/2;
-  return `<svg viewBox="0 0 200 140" width="${size}" height="${size*0.7}">${arcs}<circle cx="${cx}" cy="${cy}" r="7" fill="var(--ink-navy)"/><path class="needle" d="M ${cx} ${cy-58} L ${cx-4} ${cy} L ${cx+4} ${cy} Z" fill="var(--brass)" transform="rotate(${needleAngle+90}, ${cx}, ${cy})"/></svg>`;
+  return `<svg viewBox="0 0 200 140" width="${size}" height="${size*0.7}">${arcs}<circle cx="${cx}" cy="${cy}" r="7" fill="var(--ink-navy)"/><path class="needle" d="M ${cx} ${cy-58} L ${cx-4} ${cy} L ${cx+4} ${cy} Z" fill="var(--brass)" style="transform:rotate(${needleAngle+90}deg);"/></svg>`;
 }
 function polar(cx,cy,r,angleDeg){ const a = (angleDeg-90) * Math.PI/180; return { x: cx + r*Math.cos(a), y: cy + r*Math.sin(a) }; }
 
@@ -588,6 +541,7 @@ function classifyPhase(entries){
 }
 
 async function boot(){
+  /* 異常セッションを確実にパージするためのお掃除用フックを再定義 */
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('v') === 'clear') {
     await Promise.all([storeSet("user-state", null), storeSet("tracker-entries", []), storeSet("journal-entries", []), storeSet("challenges-state", null), storeSet("coach-history", [])]);
@@ -598,16 +552,8 @@ async function boot(){
   const [userState, tracker, journal, challenges, coachHistory] = await Promise.all([storeGet("user-state"), storeGet("tracker-entries"), storeGet("journal-entries"), storeGet("challenges-state"), storeGet("coach-history")]);
   if (userState){ STATE.profile = userState.profile || null; STATE.dmis = userState.dmis || null; }
   STATE.tracker = tracker || []; STATE.journal = journal || []; STATE.challenges = challenges || { completedDates:{}, streak:0, lastDate:null }; STATE.coachHistory = coachHistory || [];
-  
   buildTabBar();
-  
-  if (!STATE.profile){ 
-    onboardingStep = 0; 
-    renderOnboarding(); 
-  } else { 
-    document.getElementById("onboarding").classList.add("hidden"); 
-    renderAll(); 
-  }
+  if (!STATE.profile){ onboardingStep = 0; renderOnboarding(); } else { document.getElementById("onboarding").classList.add("hidden"); renderAll(); }
 }
 async function persistUserState(){ await storeSet("user-state", { profile: STATE.profile, dmis: STATE.dmis }); }
 function renderAll(){ renderHome(); renderCoach(); renderTrack(); renderJournal(); renderGrowth(); }
@@ -615,20 +561,15 @@ function renderAll(){ renderHome(); renderCoach(); renderTrack(); renderJournal(
 function buildTabBar(){
   const bar = document.getElementById("tabbar");
   bar.innerHTML = TABS.map(t => `<button class="tab" id="tab-${t.id}" onclick="switchTab('${t.id}')">${icon(t.icon,22)}<span>${t.label}</span></button>`).join("");
-  const currentTabButton = document.getElementById("tab-" + activeTab);
-  if (currentTabButton) currentTabButton.classList.add("active");
+  document.getElementById("tab-" + activeTab).classList.add("active");
 }
 
 function switchTab(id){
   activeTab = id; 
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); 
-  const targetScreen = document.getElementById("screen-"+id);
-  if (targetScreen) targetScreen.classList.add("active");
-  
+  document.getElementById("screen-"+id).classList.add("active");
   document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
-  const targetTab = document.getElementById("tab-" + id);
-  if (targetTab) targetTab.classList.add("active");
-  
+  document.getElementById("tab-" + id).classList.add("active");
   if (id==="coach") scrollChatToBottom();
 }
 
@@ -639,10 +580,10 @@ function renderOnboarding(){
   if (onboardingStep === 0){
     body = `<div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:24px;">
         ${compassDialSVG(null, {size:190})}
-        <div class="eyebrow" style="margin-top:16px; color:var(--brass-light);">DMIS-Guided Intercultural Coaching</div>
+        <div class="eyebrow" style="margin-top:166px; color:var(--brass-light);">DMIS-Guided Intercultural Coaching</div>
         <h1 style="font-family:var(--display); font-weight:900; font-size:34px; margin:12px 0 6px;">CultureCompass</h1>
         <p style="font-size:15px; line-height:1.6; color:rgba(247,242,231,0.8); max-width:290px;">
-          Navigate new cultures. Understand the unwritten rules.
+          An intercultural compass built to help you structurally understand cultures, not just survive them. A short setup, then your journey begins.
         </p>
       </div>`;
     footerHtml = `<button class="btn btn-brass btn-block" onclick="onboardingStep=1; renderOnboarding();">Get Started</button>`;
@@ -667,11 +608,11 @@ function renderOnboarding(){
       <h2 style="font-family:var(--display); font-size:24px; font-weight:900; margin:8px 0 6px;">Which culture are you navigating?</h2>
       <p style="font-size:14px; color:rgba(247,242,231,0.7); margin:0 0 16px;">The host destination where you are currently studying, working, or living.</p>
       <div class="field"><label class="field-label">Host Culture</label><select id="ob-host">${countryOptions(onboardingDraft.host)}</select></div>`;
-    footerHtml = `<div style="display:flex; gap:10px; width:100%"><button class="btn btn-ghost" style="flex:1" onclick="onboardingStep=2; declineOnboarding();">Back</button><button class="btn btn-brass" style="flex:2" onclick="obSaveHost();">Continue</button></div>`;
+    footerHtml = `<div style="display:flex; gap:10px; width:100%"><button class="btn btn-ghost" style="flex:1" onclick="onboardingStep=2; renderOnboarding();">Back</button><button class="btn btn-brass" style="flex:2" onclick="obSaveHost();">Continue</button></div>`;
   }
   else if (onboardingStep === 4){
     body = `<div class="eyebrow" style="color:var(--brass-light);">STEP 4 / 4</div>
-      <h2 style="font-family:var(--display); font-size:24px; font-weight:900; margin:8px 0 18px;">You're all set, ${escapeHtml(onboardingDraft.name)}</h2>
+      <h2 style="font-family:var(--display); font-weight:900; font-size:24px; margin:8px 0 18px;">You're all set, ${escapeHtml(onboardingDraft.name)}</h2>
       <div class="card" style="background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.16); box-shadow:none;">
         <div class="card-row"><span class="chip" style="background:rgba(255,255,255,0.1); color:var(--parchment);">HOME</span><strong style="color:var(--parchment);">${escapeHtml(onboardingDraft.home)}</strong></div>
         <div style="height:10px;"></div>
@@ -685,66 +626,233 @@ function renderOnboarding(){
   scroll.innerHTML = body; footer.innerHTML = footerHtml;
 }
 
+function onboardingStepForward(){ onboardingStep++; renderOnboarding(); }
+function onboardingStepBackward(){ onboardingStep--; renderOnboarding(); }
+
 function obSaveName(){ onboardingDraft.name = document.getElementById("ob-name").value.trim() || "Traveler"; onboardingStep = 2; renderOnboarding(); }
 function obSaveHome(){ const v = document.getElementById("ob-home").value; if (!v) return; onboardingDraft.home = v; onboardingStep = 3; renderOnboarding(); }
 function obSaveHost(){ const v = document.getElementById("ob-host").value; if (!v) return; onboardingDraft.host = v; onboardingStep = 4; renderOnboarding(); }
 async function finishOnboarding(){ STATE.profile = { name: onboardingDraft.name, home: onboardingDraft.home, host: onboardingDraft.host, createdAt: todayStr() }; await persistUserState(); document.getElementById("onboarding").classList.add("hidden"); renderAll(); }
 
-/* 未定義だったオープン／クローズモーダル関数群をここで確実に定義 */
-function openModal(html){ document.getElementById("modalSheet").innerHTML = html; document.getElementById("modalOverlay").classList.add("open"); }
-function closeModal(){ document.getElementById("modalOverlay").classList.remove("open"); }
-function scrollChatToBottom(){ const s = document.getElementById("chatScroll"); if (s) s.scrollTop = s.scrollHeight; }
-
 function openEditProfile(){
-  openModal('<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>' +
-    '<div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; color:var(--ink-navy);">Settings & Coordinates</div>' +
-    '<p class="screen-sub" style="margin-bottom:16px;">Calibrate your structural routing parameters.</p>' +
-    '<div class="field"><label class="field-label">Your Name</label><input type="text" id="ep-name" value="' + escapeHtml(STATE.profile.name) + '"></div>' +
-    '<div class="field"><label class="field-label">HOME Culture</label><select id="ep-home">' + countryOptions(STATE.profile.home) + '</select></div>' +
-    '<div class="field"><label class="field-label">HOST Culture</label><select id="ep-host">' + countryOptions(STATE.profile.host) + '</select></div>' +
-    '<button class="btn btn-primary btn-block" style="margin-bottom:12px;" onclick="saveEditProfile();">Save Changes</button>' +
-    '<div class="section-label" style="margin:20px 0 10px;">Presentation Utilities</div>' +
-    '<div style="display:flex; gap:10px;">' +
-      '<button class="btn btn-ghost" style="flex:1; color:var(--sage); border-color:var(--sage); box-shadow:none; font-size:13px; padding:10px;" onclick="injectDemoData();">📊 Load Demo Data</button>' +
-      '<button class="btn btn-ghost" style="flex:1; color:var(--rust); border-color:var(--rust); box-shadow:none; font-size:13px;" onclick="resetApp();">🗑️ Reset App</button>' +
-    '</div>');
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
+    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; color:var(--ink-navy);">Edit Profile</div>
+    <p class="screen-sub" style="margin-bottom:16px;">Updating your coordinates automatically recalculates your analyst's contextual frame.</p>
+    <div class="field"><label class="field-label">Your Name</label><input type="text" id="ep-name" value="${escapeHtml(STATE.profile.name)}"></div>
+    <div class="field"><label class="field-label">HOME Culture</label><select id="ep-home">${countryOptions(STATE.profile.home)}</select></div>
+    <div class="field"><label class="field-label">HOST Culture</label><select id="ep-host">${countryOptions(STATE.profile.host)}</select></div>
+    <button class="btn btn-primary btn-block" onclick="saveEditProfile();">Save Changes</button>`);
 }
 async function saveEditProfile(){ STATE.profile.name = document.getElementById("ep-name").value.trim() || STATE.profile.name; STATE.profile.home = document.getElementById("ep-home").value; STATE.profile.host = document.getElementById("ep-host").value; await persistUserState(); closeModal(); renderAll(); }
 
-async function injectDemoData(){
-  STATE.dmis = { stageIndex: 3, score: 44, date: todayStr() };
-  STATE.tracker = [
-    {id: "1", date: "2026-06-20", mood: 4, note: "Arrived at host campus! Energetic vibe."},
-    {id: "2", date: "2026-06-22", mood: 5, note: "Met some great peer network groups."},
-    {id: "3", date: "2026-06-24", mood: 3, note: "Slight bureaucratic friction with registration."},
-    {id: "4", date: "2026-06-26", mood: 2, note: "Communication styles here feel confusing today."},
-    {id: "5", date: "2026-06-28", mood: 2, note: "Missed family group threads. Feeling slightly isolated."},
-    {id: "6", date: "2026-06-30", mood: 3, note: "Deconstructed the friction via AI Coach. Clicking."},
-    {id: "7", date: "2026-07-02", mood: 4, note: "Built solid functional baseline routines today."}
-  ];
-  STATE.journal = [
-    {id: "j1", date: "2026-06-25", prompt: "Describe a moment today when you noticed a cultural difference.", text: "Noticed heavy high-context processing loops during our class group assignment setup. People heavily navigate face-saving parameters rather than stating explicit low-context critiques."},
-    {id: "j2", date: "2026-06-29", prompt: "What implicit assumption did you catch yourself making today?", text: "Caught myself assuming someone was being dismissive by breaking direct eye contact, but deconstructed it as an act of polite, deep-rooted collective deference."}
-  ];
-  STATE.challenges.completedDates = {"2026-07-01": true, "2026-07-02": true};
-  STATE.challenges.streak = 2;
-  await Promise.all([persistUserState(), storeSet("tracker-entries", STATE.tracker), storeSet("journal-entries", STATE.journal), storeSet("challenges-state", STATE.challenges)]);
-  closeModal(); renderAll();
-}
+function openModal(html){ document.getElementById("modalSheet").innerHTML = html; document.getElementById("modalOverlay").classList.add("open"); }
+function closeModal(){ document.getElementById("modalOverlay").classList.remove("open"); }
 
-async function resetApp(){
-  if(confirm("Reset entire local database session?")){
-    await Promise.all([storeSet("user-state", null), storeSet("tracker-entries", []), storeSet("journal-entries", []), storeSet("challenges-state", null), storeSet("coach-history", [])]);
-    window.location.reload();
-  }
+/* ================================ HOME ==================================== */
+function renderHome(){
+  const el = document.getElementById("screen-home"); const p = STATE.profile; const today = todayStr(); const challengeIdx = dayOfYear(new Date()) % CHALLENGES.length; const challengeText = CHALLENGES[challengeIdx]; const doneToday = !!STATE.challenges.completedDates[today]; const lastJournal = STATE.journal[STATE.journal.length-1];
+  el.innerHTML = `
+    <div class="card-row" style="margin-top:8px;">
+      <div>
+        <div class="eyebrow">${greetingWord()}</div>
+        <div class="screen-title" style="margin-top:2px;">${escapeHtml(p.name)}</div>
+      </div>
+      <button class="sheet-close" onclick="openEditProfile();">${icon('gear',20)}</button>
+    </div>
+    <div class="screen-sub" style="margin-top: 4px;">${fmtDateLong(today)} · <span class="chip brass" style="margin-left:2px; font-weight:800;">${escapeHtml(p.home)} ➔ ${escapeHtml(p.host)}</span></div>
+
+    <div class="card" onclick="switchTab('growth')" style="cursor:pointer; text-align:center;">
+      <div class="dial-wrap">
+        ${compassDialSVG(STATE.dmis ? STATE.dmis.stageIndex : null, {size:180})}
+        ${STATE.dmis ? `<div class="dial-stage-name" style="font-weight:900; font-size:20px; color:var(--ink-navy); margin-top:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</div><div class="dial-stage-group" style="font-weight:800; font-size:11px; color:var(--text-mute); margin-top:2px;">Current DMIS Stage</div>` : `<div class="dial-stage-name" style="font-weight:900; font-size:17px; color:var(--ink-navy); margin-top:6px;">Unassessed Baseline</div><div class="dial-stage-group" style="color:var(--brass); font-weight:800; font-size:11px;">Tap to take the 2-minute developmental index quiz</div>`}
+      </div>
+    </div>
+
+    <div class="section-label">TODAY'S MISSION</div>
+    <div class="card">
+      <p style="font-size:15px; font-weight:700; line-height:1.55; margin:0 0 14px; color:var(--text-main);">${escapeHtml(challengeText)}</p>
+      <button class="btn ${doneToday?'btn-ghost':'btn-brass'} btn-block" onclick="toggleChallenge('${today}')">
+        ${doneToday ? '✓ Completed (a new mission refreshes tomorrow)' : 'Mark as Done'}
+      </button>
+    </div>
+
+    <div class="section-label">ANALYTICS</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-num">${STATE.journal.length}</div><span class="stat-label">Notes Logged</span></div>
+      <div class="stat-box"><div class="stat-num">${STATE.tracker.length}</div><span class="stat-label">Check-ins</span></div>
+      <div class="stat-box"><div class="stat-num">${STATE.challenges.streak}</div><span class="stat-label">Day Streak ${STATE.challenges.streak>0?'🔥':''}</span></div>
+      <div class="stat-box"><div class="stat-num">${Object.keys(STATE.challenges.completedDates).length}</div><span class="stat-label">Total Cleared</span></div>
+    </div>
+
+    <div class="section-label">QUICK ACCESS</div>
+    <div class="card" style="padding:8px 12px;">
+      <div class="list-item" onclick="switchTab('coach')" style="cursor:pointer;">
+        <div class="li-icon" style="background:#e8f0fe;">💬</div><div class="li-body"><div class="li-title">Consult AI Cultural Coach</div><div class="li-sub">Deconstruct subtle friction points structurally</div></div>${icon('chevron',16)}
+      </div>
+      <div class="list-item" onclick="switchTab('track')" style="cursor:pointer;">
+        <div class="li-icon" style="background:#e6f4ea;">📈</div><div class="li-body"><div class="li-title">Log Current State</div><div class="li-sub">Map everyday psychological adaptation fluctuations</div></div>${icon('chevron',16)}
+      </div>
+      <div class="list-item" onclick="switchTab('journal')" style="cursor:pointer;">
+        <div class="li-icon" style="background:#fef7e0;">📝</div><div class="li-body"><div class="li-title">${lastJournal ? 'Continue Reflection Journal' : 'Write First Entry'}</div><div class="li-sub">${lastJournal ? escapeHtml(lastJournal.text.slice(0,35))+'…' : 'Answer structured prompts to build metacognition'}</div></div>${icon('chevron',16)}
+      </div>
+    </div>`;
 }
 
 async function toggleChallenge(dateStr){
   const c = STATE.challenges;
   if (c.completedDates[dateStr]){ delete c.completedDates[dateStr]; } else { c.completedDates[dateStr] = true; let streak = 0; let d = new Date(dateStr + "T00:00:00"); while (c.completedDates[todayStr(d)]){ streak++; d.setDate(d.getDate()-1); } c.streak = streak; c.lastDate = dateStr; }
+  if (!c.completedDates[dateStr]) { let streak = 0; let d = new Date(todayStr()+"T00:00:00"); while (c.completedDates[todayStr(d)]){ streak++; d.setDate(d.getDate()-1); } c.streak = streak; }
   await storeSet("challenges-state", c); renderHome(); renderGrowth();
 }
-  
+
+/* ================================ COACH ==================================== */
+function renderCoach(){
+  const el = document.getElementById("screen-coach"); const p = STATE.profile;
+  el.innerHTML = `<div style="margin-top:8px;"><div class="eyebrow">CULTURAL INTERACTION ANALYST</div><div class="screen-title" style="margin-top:2px; font-size:24px;">AI Deconstruction</div><div class="screen-sub"><span class="chip brass">${escapeHtml(p.home)} ➔ ${escapeHtml(p.host)}</span> ${STATE.dmis ? `<span class="chip sage" style="margin-left:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</span>` : ""}</div></div>
+    <div class="chat-scroll" id="chatScroll" style="display:flex; flex-direction:column; gap:10px; padding-bottom:8px; margin-top:12px;">
+      ${STATE.coachHistory.length === 0 ? `<div class="empty-state" style="text-align:center; padding:34px 14px;"><span class="glyph" style="font-size:32px;">💬</span><div class="msg" style="font-weight:800; margin-top:8px; color:var(--text-mute);">Describe a confusing moment or behavior to analyze its implicit cultural logic.</div></div>` : STATE.coachHistory.map(m => `<div class="bubble ${m.role==='user'?'user':'ai'}">${formatAiText(m.text)}</div>`).join("")}
+    </div>
+    <div class="chat-inputbar">
+      <textarea id="coachInput" placeholder="Type what's on your mind…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCoachMessageFromInput();}"></textarea>
+      <button class="chat-send" style="background:var(--brass); border:none; border-radius:50%; width:46px; height:46px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex: 0 0 auto;" onclick="sendCoachMessageFromInput();">${icon('send',18)}</button>
+    </div>`; scrollChatToBottom();
+}
+function scrollChatToBottom(){ const s = document.getElementById("chatScroll"); if (s) s.scrollTop = s.scrollHeight; }
+function formatAiText(t){ let s = escapeHtml(t); s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); s = s.replace(/\n/g, "<br>"); return s; }
+function sendCoachMessageFromInput(){ const ta = document.getElementById("coachInput"); const text = ta.value.trim(); if (!text) return; ta.value = ""; sendCoachMessage(text); }
+
+async function sendCoachMessage(text){
+  STATE.coachHistory.push({ role:"user", text }); 
+  renderCoach(); 
+  await storeSet("coach-history", STATE.coachHistory);
+
+  const scroll = document.getElementById("chatScroll"); 
+  const typingEl = document.createElement("div"); 
+  typingEl.className = "bubble ai"; 
+  typingEl.id = "typingBubble"; 
+  typingEl.textContent = "Analyzing background context..."; 
+  scroll.appendChild(typingEl); 
+  scrollChatToBottom();
+
+  setTimeout(async () => {
+    const tb = document.getElementById("typingBubble");
+    if (tb) tb.remove();
+    let reply = "Connection error detected. Please verify your data link and try again.";
+    STATE.coachHistory.push({ role:"assistant", text: reply });
+    await storeSet("coach-history", STATE.coachHistory);
+    renderCoach();
+  }, 1200);
+}
+
+/* ================================ TRACK ==================================== */
+let trackSelectedMood = null;
+function renderTrack(){
+  const el = document.getElementById("screen-track"); const today = todayStr(); const already = STATE.tracker.find(e => e.date === today); const phase = classifyPhase(STATE.tracker); const values = STATE.tracker.slice(-14).map(e=>e.mood);
+  el.innerHTML = `<div class="eyebrow" style="margin-top:8px;">ADJUSTMENT CURVE TRACKER</div><div class="screen-title" style="margin-top:2px; font-size:24px;">Psychological States</div><div class="screen-sub">Dips and rises along the adaptation curve reflect active mental integration, not personal failure.</div>
+    <div class="card"><div><span class="chip ${phase.name.includes('Frustration')?'rust':phase.name.includes('Honeymoon')?'brass':'sage'}">${phase.name}</span></div><p style="font-size:13.5px; font-weight:700; line-height:1.55; color:var(--text-mute); margin:10px 0 12px;">${phase.note}</p>${values.length ? sparkline(values) : `<div class="empty-state" style="text-align:center; padding:14px 0;"><span class="msg" style="font-weight:700; color:var(--text-mute);">Your long-term cultural adaptation line will plot here as you track your state.</span></div>`}</div>
+    <div class="section-label">${already ? "Today's Check-in" : "How is your adaptation energy today?"}</div>
+    <div class="card"><div class="mood-row" style="display:flex; gap:10px; justify-content:space-between; margin:8px 0 6px;">${MOODS.map(m => `<button class="mood-btn ${((already?already.mood:trackSelectedMood)===m.v)?'selected':''}" style="flex:1; aspect-ratio:1; border-radius:18px; border:2px solid var(--line); background:#fff; font-size:24px; cursor:pointer; transition: all 0.1s;" onclick="pickMood(${m.v})" ${already?'disabled':''}>${m.e}</button>`).join("")}</div>
+      <div style="text-align:center; font-size:13px; font-weight:800; color:var(--text-mute); margin-bottom:14px;">${already ? MOODS.find(m=>m.v===already.mood).label : (trackSelectedMood ? MOODS.find(m=>m.v===trackSelectedMood).label : "Select an index mapping closest to your state")}</div>
+      ${already ? `${already.note ? `<p style="font-size:14px; font-weight:600; color:var(--text-main); background:var(--parchment-dim); padding:12px; border-radius:16px; margin:0;">${escapeHtml(already.note)}</p>` : ""}<div style="text-align:center; margin-top:8px;"><span class="chip">✓ Logged for today</span></div>` : `<textarea id="trackNote" placeholder="Optional notes — what specific interaction happened today?" rows="2"></textarea><div style="height:12px;"></div><button class="btn btn-brass btn-block" ${trackSelectedMood?'':'disabled'} onclick="saveCheckIn();">Save State</button>`}</div>
+    <div class="section-label">TRACKING HISTORY</div>
+    ${STATE.tracker.length === 0 ? `<div class="empty-state"><span class="glyph">🧭</span><div class="msg">Consecutive logs build an accurate blueprint of your adaptation phases over time.</div></div>` : `<div class="card" style="padding:8px 12px;">${STATE.tracker.slice().reverse().slice(0,20).map(e => `<div class="list-item"><div class="li-icon">${MOODS.find(m=>m.v===e.mood).e}</div><div class="li-body"><div class="li-title">${fmtDate(e.date)} ➔ ${MOODS.find(m=>m.v===e.mood).label}</div>${e.note ? `<div class="li-sub">${escapeHtml(e.note)}</div>` : ""}</div></div>`).join("")}</div>`}`;
+}
+function pickMood(v){ trackSelectedMood = v; renderTrack(); }
+async function saveCheckIn(){ const note = document.getElementById("trackNote").value.trim(); STATE.tracker.push({ id:uid(), date: todayStr(), mood: trackSelectedMood, note }); trackSelectedMood = null; await storeSet("tracker-entries", STATE.tracker); renderTrack(); renderHome(); renderGrowth(); }
+
+/* ================================ JOURNAL =================================== */
+function renderJournal(){
+  const el = document.getElementById("screen-journal");
+  el.innerHTML = `<div class="card-row" style="margin-top:8px;"><div><div class="eyebrow">METAGOGNITIVE REFLECTION</div><div class="screen-title" style="margin-top:2px; font-size:24px;">Notice, Don't Just Cope</div></div></div><div class="screen-sub">Reflection over rote memorization. A spaces to untangle confusing signals and map your own cultural lens.</div>
+    <button class="btn btn-primary btn-block" onclick="openNewEntry();" style="margin-bottom:18px; display:flex; align-items:center; justify-content:center; gap:8px;">${icon('plus',18)} Create New Entry</button>
+    ${STATE.journal.length === 0 ? `<div class="empty-state" style="text-align:center; padding:34px 14px;"><span class="glyph" style="font-size:36px;">📓</span><div class="msg" style="font-weight:700; margin-top:8px;">Your first entry takes two minutes. Choose a reflection prompt to start.</div></div>` : `<div class="section-label">REFLECTIONS LOG</div><div class="card" style="padding:8px 12px;">${STATE.journal.slice().reverse().map(j => `<div class="list-item" onclick="viewEntry('${j.id}')" style="cursor:pointer;"><div class="li-icon">📝</div><div class="li-body"><div class="li-title">${fmtDate(j.date)}</div><div class="li-sub">${escapeHtml(j.text.slice(0,35))}${j.text.length>35?'…':''}</div></div>${icon('chevron',16)}</div>`).join("")}</div>`}`;
+}
+function openNewEntry(){
+  const promptIdx = Math.floor(Math.random()*JOURNAL_PROMPTS.length);
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
+    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:20px;">Reflection Prompt</div>
+    <div class="card" style="background:var(--parchment-dim); border:none; margin:12px 0 16px; box-shadow:none;"><p id="entryPromptText" style="font-size:14.5px; font-weight:700; margin:0; line-height:1.6; color:var(--text-main);">${escapeHtml(JOURNAL_PROMPTS[promptIdx])}</p>
+      <button class="btn btn-ghost" style="margin-top:12px; font-size:12px; padding:6px 12px; box-shadow:none;" onclick="shufflePrompt();">🎲 Shuffle New Prompt</button></div>
+    <textarea id="entryText" rows="6" placeholder="Write freely. There are no graded metrics here — just focus on analyzing your framework."></textarea><div style="height:14px;"></div><button class="btn btn-brass btn-block" onclick="saveEntry();">Save Entry</button>`);
+  document.getElementById("modalSheet").dataset.promptIdx = promptIdx;
+}
+function shufflePrompt(){ const sheet = document.getElementById("modalSheet"); let idx = Math.floor(Math.random()*JOURNAL_PROMPTS.length); sheet.dataset.promptIdx = idx; document.getElementById("entryPromptText").textContent = JOURNAL_PROMPTS[idx]; }
+async function saveEntry(){ const text = document.getElementById("entryText").value.trim(); if (!text) return; const idx = parseInt(document.getElementById("modalSheet").dataset.promptIdx, 10); STATE.journal.push({ id: uid(), date: todayStr(), prompt: JOURNAL_PROMPTS[idx], text }); await storeSet("journal-entries", STATE.journal); closeModal(); renderJournal(); renderHome(); renderGrowth(); }
+function viewEntry(id){
+  const j = STATE.journal.find(e => e.id === id); if (!j) return;
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
+    <div class="eyebrow">${fmtDateLong(j.date)}</div><div class="sheet-title" style="font-size:16px; margin-top:6px; font-weight:800; line-height:1.4;">${escapeHtml(j.prompt)}</div>
+    <p style="font-size:14.5px; font-weight:600; line-height:1.65; white-space:pre-wrap; margin-top:14px; color:var(--text-main);">${escapeHtml(j.text)}</p>
+    <button class="btn btn-ghost btn-block" style="margin-top:18px; color:var(--rust); border-color:var(--rust); box-shadow:none;" onclick="deleteEntry('${j.id}');">Delete This Entry</button>`);
+}
+async function deleteEntry(id){ STATE.journal = STATE.journal.filter(e => e.id !== id); await storeSet("journal-entries", STATE.journal); closeModal(); renderJournal(); renderHome(); renderGrowth(); }
+
+/* ================================ GROWTH =================================== */
+function renderGrowth(){
+  const el = document.getElementById("screen-growth"); const today = todayStr(); const challengeIdx = dayOfYear(new Date()) % CHALLENGES.length; const daysActive = STATE.profile ? Math.max(1, Math.round((new Date(today) - new Date(STATE.profile.createdAt))/86400000)+1) : 1; const values = STATE.tracker.slice(-14).map(e=>e.mood);
+  el.innerHTML = `<div class="eyebrow" style="margin-top:8px;">DMIS ASSESSMENT SCHEMA</div><div class="screen-title" style="margin-top:2px; font-size:24px;">Development Visible</div><div class="screen-sub">Tracking orientation changes across Milton Bennett's Developmental Model of Intercultural Sensitivity.</div>
+    <div class="card"><div class="dial-wrap">${compassDialSVG(STATE.dmis ? STATE.dmis.stageIndex : null, {size:190})}
+        ${STATE.dmis ? `<div class="dial-stage-name" style="font-weight:900; font-size:20px; color:var(--ink-navy); margin-top:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</div><div class="dial-stage-group" style="font-weight:800; font-size:12px; color:var(--brass); margin-top:2px;">Metric Score: ${STATE.dmis.score} / 60 (Stage: ${DMIS_STAGES[STATE.dmis.stageIndex].group})</div><p style="font-size:13.5px; font-weight:700; color:var(--text-mute); line-height:1.6; margin:12px 4px 14px;">${DMIS_STAGES[STATE.dmis.stageIndex].blurb}</p>` : `<div class="dial-stage-name" style="font-weight:900; font-size:17px; margin-top:6px;">Sensitivity Level Unmeasured</div><div class="dial-stage-group" style="color:var(--brass); font-weight:800; font-size:11px;">Complete the core self-assessment to map your developmental frame.</div><div style="height:12px;"></div>`}</div>
+      <button class="btn ${STATE.dmis?'btn-ghost':'btn-brass'} btn-block" onclick="startQuiz();">Evaluate Intercultural Stage</button></div>
+    <div class="section-label">LEVEL METRICS</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-num">${daysActive}</div><span class="stat-label">Days Active</span></div>
+      <div class="stat-box"><div class="stat-num">${STATE.challenges.streak}</div><span class="stat-label">Current Streak</span></div>
+      <div class="stat-box"><div class="stat-num">${STATE.journal.length}</div><span class="stat-label">Total Notes</span></div>
+      <div class="stat-box"><div class="stat-num">${Object.keys(STATE.challenges.completedDates).length}</div><span class="stat-label">Cleared Tasks</span></div>
+    </div>
+    ${values.length ? `<div class="section-label">MOOD TREND LINE</div><div class="card">${sparkline(values)}</div>` : ""}
+    <div class="section-label">CHALLENGE POOL (Randomly selected daily)</div>
+    <div class="card" style="padding:8px 12px;">${CHALLENGES.map((c,i) => { const isToday = i === challengeIdx; const doneToday = isToday && !!STATE.challenges.completedDates[today]; return `<div class="list-item"><div class="li-icon" style="font-size:14px;">${doneToday ? '✅' : (isToday ? '📍' : '•')}</div><div class="li-body"><div class="li-title" style="${isToday?'font-weight:900; color:var(--ink-navy);':'color:var(--text-mute); font-weight:600;'}">${escapeHtml(c)}</div>${isToday ? `<div class="li-sub" style="color:var(--brass); font-weight:900;">Active Today</div>` : ""}</div></div>`; }).join("")}</div>
+    <div class="section-label">UTILITIES</div>
+    <div class="card" style="padding:8px 12px;">
+      <div class="list-item" onclick="openTranslate();" style="cursor:pointer;"><div class="li-icon">🗣️</div><div class="li-body"><div class="li-title">One-Tap Translation Tool</div><div class="li-sub">Rapid situational phrase alignment utility</div></div>${icon('chevron',16)}</div>
+      <div class="list-item" onclick="openEditProfile();" style="cursor:pointer;"><div class="li-icon">⚙️</div><div class="li-body"><div class="li-title">Modify Target Route</div><div class="li-sub">Current setup: ${escapeHtml(STATE.profile.home)} ➔ ${escapeHtml(STATE.profile.host)}</div></div>${icon('chevron',16)}</div>
+    </div>`;
+}
+
+let quizAnswers = []; let quizIndex = 0;
+function startQuiz(){ quizAnswers = new Array(DMIS_QUESTIONS.length).fill(null); quizIndex = 0; renderQuiz(); }
+function renderQuiz(){
+  const total = DMIS_QUESTIONS.length; const pct = Math.round(((quizIndex)/total)*100);
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
+    <div class="eyebrow">DMIS Evaluation · ${quizIndex+1} / ${total}</div><div class="quiz-progress" style="margin-top:12px;"><div class="quiz-progress-fill" style="width:${pct}%;"></div></div>
+    <p style="font-size:18px; line-height:1.5; font-family:var(--display); font-weight:800; margin:4px 0 18px; color:var(--ink-navy);">${escapeHtml(DMIS_QUESTIONS[quizIndex])}</p>
+    ${["Strongly Disagree","Disagree","Neutral","Agree","Strongly Agree"].map((label,i)=>`<button class="quiz-opt" style="display:block; width:100%; text-align:left; background:#fff; border:2px solid var(--line); border-radius:16px; padding:14px; margin-bottom:10px; font-size:14.5px; font-weight:700; cursor:pointer;" onclick="answerQuiz(${i+1})">${label}</button>`).join("")}`);
+}
+function answerQuiz(val){ quizAnswers[quizIndex] = val; if (quizIndex < DMIS_QUESTIONS.length - 1){ quizIndex++; renderQuiz(); } else { finishQuiz(); } }
+async function finishQuiz(){
+  const total = quizAnswers.reduce((a,b)=>a+b,0); const stageIndex = scoreToStageIndex(total); STATE.dmis = { stageIndex, score: total, date: todayStr() }; await persistUserState(); const stage = DMIS_STAGES[stageIndex];
+  openModal(`<div class="sheet-handle"></div>
+    <div style="text-align:center; padding-top:6px;">${compassDialSVG(stageIndex, {size:190})}
+      <div class="dial-stage-group" style="font-weight:800; color:var(--brass); font-size:12px; margin-top:12px;">Evaluation Cluster: ${stage.group}</div>
+      <div class="dial-stage-name" style="font-size:22px; font-weight:900; color:var(--ink-navy); margin-top:2px;">${stage.name}</div>
+      <p style="font-size:14px; font-weight:700; color:var(--text-mute); line-height:1.6; margin:12px 4px 20px;">${stage.blurb}</p>
+      <button class="btn btn-primary btn-block" onclick="closeModal(); renderGrowth(); renderHome(); renderCoach(); switchTab('growth');">Confirm Mapping</button>
+    </div>`);
+}
+
+const TRANSLATE_LANGS = ["English","Japanese","Spanish","French","German","Mandarin Chinese","Korean","Portuguese","Arabic","Hindi","Vietnamese","Thai","Russian","Italian"];
+function openTranslate(){
+  openModal(`<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
+    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px;">Quick Translate</div><p class="screen-sub" style="margin-bottom:16px;">Translate phrases rapidly for everyday local navigation scenarios.</p>
+    <div class="field"><label class="field-label">Source Text</label><textarea id="trText" rows="3" placeholder="Type a phrase here…"></textarea></div>
+    <div class="field"><label class="field-label">Target Language</label><select id="trLang">${TRANSLATE_LANGS.map(l=>`<option value="${l}">${l}</option>`).join("")}</select></div>
+    <button class="btn btn-brass btn-block" onclick="runTranslate();">Execute Translation</button><div id="trResult"></div>`);
+}
+async function runTranslate(){
+  const text = document.getElementById("trText").value.trim(); const lang = document.getElementById("trLang").value; const resultEl = document.getElementById("trResult"); if (!text){ return; }
+  resultEl.innerHTML = `<p style="margin-top:14px; font-size:13.5px; font-weight:700; color:var(--text-mute);">Processing...</p>`;
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 300, system: `You are a translation tool. Translate the user's text into ${lang}. Respond with ONLY the translation and nothing else — no notes, no quotation marks, no explanation.`, messages: [{ role:"user", content: text }] }) });
+    const data = await response.json(); const out = (data.content||[]).map(b=>b.text||"").join("").trim();
+    resultEl.innerHTML = `<div class="card" style="background:var(--parchment-dim); border:none; margin-top:14px; box-shadow:none;"><div class="eyebrow" style="margin-bottom:6px;">${lang.toUpperCase()}</div><p style="font-size:15.5px; font-weight:800; margin:0; line-height:1.55; color:var(--ink-navy);">${escapeHtml(out || "Translation string mapping failed.")}</p></div>`;
+  }catch(e){
+    resultEl.innerHTML = `<p style="margin-top:14px; font-size:13.5px; font-weight:700; color:var(--rust);">Data error. Please verify network access and try again.</p>`;
+  }
+}
+
 boot();
 </script>
+</body>
 </html>
