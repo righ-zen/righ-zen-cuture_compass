@@ -541,6 +541,7 @@ const QUICK_PROMPTS = [
 ];
 
 /* Dummy subscription plans for presentation purposes only — no real billing. */
+/* Dummy subscription plans for presentation purposes only — no real billing. */
 const PLANS = [
   {
     id: "wanderer", name: "Wanderer", price: 0, period: "forever",
@@ -733,9 +734,6 @@ function renderOnboarding(){
   scroll.innerHTML = body; footer.innerHTML = footerHtml;
 }
 
-/* --- These four functions drive the onboarding step-by-step flow.
-       They were missing in the last version, which is why "Continue"
-       did nothing past the name step and the app never got past onboarding. --- */
 function obSaveName(){ onboardingDraft.name = document.getElementById("ob-name").value.trim() || "Traveler"; onboardingStep = 2; renderOnboarding(); }
 function obSaveHome(){ const v = document.getElementById("ob-home").value; if (!v) return; onboardingDraft.home = v; onboardingStep = 3; renderOnboarding(); }
 function obSaveHost(){ const v = document.getElementById("ob-host").value; if (!v) return; onboardingDraft.host = v; onboardingStep = 4; renderOnboarding(); }
@@ -803,15 +801,13 @@ async function toggleChallenge(dateStr){
   await storeSet("challenges-state", c); renderHome(); renderGrowth();
 }
 
-/* モーダルを開いた際、スマホの実機カメラを起動して映像をシームレスに流し込む */
-let cameraStream = null; // カメラのストリームを管理するグローバル変数
+let cameraStream = null; 
 
 function openQrScanner(){
   openModal('<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeQrScannerModal();">✕</button>' +
     '<div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; margin-bottom:4px;">Scan QR / Barcode</div>' +
     '<p class="screen-sub" style="margin-bottom:16px;">Calibration & Extended Context Analyzer</p>' +
     '<div class="camera-view">' +
-      /* 真っ黒な背景の上に、実機のビデオ映像を重ねるためのvideoタグを配置 */
       '<video id="webcamVideo" autoplay playsinline style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;"></video>' +
       '<div class="scan-frame" style="z-index:2;"></div>' +
       '<p style="font-family:var(--mono); font-size:12px; font-weight:600; color:rgba(255,255,255,0.7); position:absolute; bottom:16px; z-index:2;">Align code within the frame</p>' +
@@ -819,13 +815,11 @@ function openQrScanner(){
     '<div style="height:16px;"></div>' +
     '<button class="btn btn-primary btn-block" onclick="triggerMockScan();">⚡ Simulate Scan Match</button>');
 
-  /* 画面に要素が配置された直後に、デバイスのカメラにアクセスを要求 */
   setTimeout(async () => {
     const videoEl = document.getElementById("webcamVideo");
     if (!videoEl) return;
     
     try {
-      /* 背面カメラ（environment）の起動を最優先でリクエスト */
       cameraStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
         audio: false
@@ -834,11 +828,9 @@ function openQrScanner(){
     } catch (err) {
       console.log("Rear camera nested routing failed, trying fallback...", err);
       try {
-        /* 背面カメラが無い・使えない場合は標準のカメラを起動 */
         cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         videoEl.srcObject = cameraStream;
       } catch (fallbackErr) {
-        /* 完全に拒否された、または非対応端末用のエラー表示 */
         videoEl.style.display = "none";
         const errorMsg = document.createElement("p");
         errorMsg.style.cssText = "position:absolute; z-index:2; color:var(--rust); font-size:13px; font-weight:700; text-align:center; padding:20px;";
@@ -849,7 +841,6 @@ function openQrScanner(){
   }, 50);
 }
 
-/* モーダルを閉じる際、カメラの起動ランプを安全に消灯させる後処理 */
 function cleanUpCamera(){
   if (cameraStream) {
     cameraStream.getTracks().forEach(track => track.stop());
@@ -860,13 +851,6 @@ function cleanUpCamera(){
 function closeQrScannerModal(){
   cleanUpCamera();
   closeModal();
-}
-
-function triggerMockScan(){
-  const frame = document.querySelector('.scan-frame');
-  if(frame) frame.style.borderColor = "var(--sage)";
-  alert("Code recognized! [ID: CC-4091] -> Calibration unlock prompt triggered.");
-  closeQrScannerModal();
 }
 
 function triggerMockScan(){
@@ -1136,36 +1120,6 @@ function renderPlans(){
       </div>
     `).join("")}
   `;
-}
-
-function selectPlan(planId){
-  const plan = PLANS.find(p => p.id === planId);
-  if (!plan) return;
-
-  openModal(`
-    <div class="sheet-handle"></div>
-    <button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
-
-    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px;">
-      ${escapeHtml(plan.name)} Selected
-    </div>
-    <p class="screen-sub" style="margin-bottom:16px;">
-      Review your global navigation parameters before checking out via secure routing protocol.
-    </p>
-
-    <div class="card" style="background:var(--parchment-dim); border:none; box-shadow:none;">
-      <div style="font-size:28px; font-weight:900; color:var(--ink-navy); margin-bottom:6px;">
-        $${plan.price} <span style="font-size:14px; color:var(--text-mute);">/ ${escapeHtml(plan.period)}</span>
-      </div>
-      <div style="font-size:14px; font-weight:700; color:var(--text-main);">
-        ${escapeHtml(plan.tagline)}
-      </div>
-    </div>
-
-    <button class="btn btn-brass btn-block" onclick="closeModal();" style="margin-top:14px;">
-      Confirm Upgrade
-    </button>
-  `);
 }
 
 
