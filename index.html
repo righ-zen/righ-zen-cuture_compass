@@ -539,6 +539,43 @@ const QUICK_PROMPTS = [
   "How should I navigate transitional fatigue or homesickness safely?"
 ];
 
+/* Dummy subscription plans for presentation purposes only — no real billing. */
+const PLANS = [
+  {
+    id: "wanderer", name: "Wanderer", price: 0, period: "forever",
+    tagline: "Get your bearings",
+    features: [
+      "DMIS self-assessment (1 per month)",
+      "1 daily cultural challenge",
+      "Culture shock tracker",
+      "5 journal entries / month"
+    ]
+  },
+  {
+    id: "navigator", name: "Navigator", price: 9, period: "month",
+    tagline: "For your whole exchange or posting",
+    popular: true,
+    features: [
+      "Unlimited DMIS re-assessment",
+      "Unlimited AI Cultural Coach chats",
+      "Unlimited journal entries",
+      "Quick Translate tool",
+      "Full progress trend analytics"
+    ]
+  },
+  {
+    id: "compass-pro", name: "Compass Pro", price: 19, period: "month",
+    tagline: "The full navigation suite",
+    features: [
+      "Everything in Navigator",
+      "Priority AI Coach responses",
+      "Custom challenge tracks by destination",
+      "Export journal as PDF",
+      "1 monthly 1:1 cultural mentor call"
+    ]
+  }
+];
+
 const ICONS = {
   home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H10v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V20h3.5a1 1 0 0 0 1-1v-9"/>',
   coach: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z"/>',
