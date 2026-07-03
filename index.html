@@ -540,6 +540,7 @@ const QUICK_PROMPTS = [
   "How should I navigate transitional fatigue or homesickness safely?"
 ];
 
+/* Dummy subscription plans for presentation purposes only — no real billing. */
 const PLANS = [
   {
     id: "wanderer", name: "Wanderer", price: 0, period: "forever",
@@ -732,6 +733,23 @@ function renderOnboarding(){
   scroll.innerHTML = body; footer.innerHTML = footerHtml;
 }
 
+/* --- These four functions drive the onboarding step-by-step flow.
+       They were missing in the last version, which is why "Continue"
+       did nothing past the name step and the app never got past onboarding. --- */
+function obSaveName(){ onboardingDraft.name = document.getElementById("ob-name").value.trim() || "Traveler"; onboardingStep = 2; renderOnboarding(); }
+function obSaveHome(){ const v = document.getElementById("ob-home").value; if (!v) return; onboardingDraft.home = v; onboardingStep = 3; renderOnboarding(); }
+function obSaveHost(){ const v = document.getElementById("ob-host").value; if (!v) return; onboardingDraft.host = v; onboardingStep = 4; renderOnboarding(); }
+async function finishOnboarding(){
+  STATE.profile = { name: onboardingDraft.name, home: onboardingDraft.home, host: onboardingDraft.host, createdAt: todayStr() };
+  await persistUserState();
+  document.getElementById("onboarding").classList.add("hidden");
+  renderAll();
+}
+
+function openModal(html){ document.getElementById("modalSheet").innerHTML = html; document.getElementById("modalOverlay").classList.add("open"); }
+function closeModal(){ document.getElementById("modalOverlay").classList.remove("open"); }
+function scrollChatToBottom(){ const s = document.getElementById("chatScroll"); if (s) s.scrollTop = s.scrollHeight; }
+
 function openEditProfile(){
   openModal('<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>' +
     '<div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; color:var(--ink-navy);">Settings & Coordinates</div>' +
@@ -785,25 +803,29 @@ async function toggleChallenge(dateStr){
   await storeSet("challenges-state", c); renderHome(); renderGrowth();
 }
 
-let cameraStream = null; 
+/* モーダルを開いた際、スマホの実機カメラを起動して映像をシームレスに流し込む */
+let cameraStream = null; // カメラのストリームを管理するグローバル変数
 
 function openQrScanner(){
   openModal('<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeQrScannerModal();">✕</button>' +
     '<div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; margin-bottom:4px;">Scan QR / Barcode</div>' +
     '<p class="screen-sub" style="margin-bottom:16px;">Calibration & Extended Context Analyzer</p>' +
     '<div class="camera-view">' +
+      /* 真っ黒な背景の上に、実機のビデオ映像を重ねるためのvideoタグを配置 */
       '<video id="webcamVideo" autoplay playsinline style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;"></video>' +
       '<div class="scan-frame" style="z-index:2;"></div>' +
       '<p style="font-family:var(--mono); font-size:12px; font-weight:600; color:rgba(255,255,255,0.7); position:absolute; bottom:16px; z-index:2;">Align code within the frame</p>' +
     '</div>' +
-    '<div style="height:16px;"></div>' +
+   '<div style="height:16px;"></div>' +
     '<button class="btn btn-primary btn-block" onclick="triggerMockScan();">⚡ Simulate Scan Match</button>');
 
+  /* 画面に要素が配置された直後に、デバイスのカメラにアクセスを要求 */
   setTimeout(async () => {
     const videoEl = document.getElementById("webcamVideo");
     if (!videoEl) return;
     
     try {
+      /* 背面カメラ（environment）の起動を最優先でリクエスト */
       cameraStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
         audio: false
@@ -812,9 +834,11 @@ function openQrScanner(){
     } catch (err) {
       console.log("Rear camera nested routing failed, trying fallback...", err);
       try {
+        /* 背面カメラが無い・使えない場合は標準のカメラを起動 */
         cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         videoEl.srcObject = cameraStream;
       } catch (fallbackErr) {
+        /* 完全に拒否された、または非対応端末用のエラー表示 */
         videoEl.style.display = "none";
         const errorMsg = document.createElement("p");
         errorMsg.style.cssText = "position:absolute; z-index:2; color:var(--rust); font-size:13px; font-weight:700; text-align:center; padding:20px;";
@@ -825,6 +849,7 @@ function openQrScanner(){
   }, 50);
 }
 
+/* モーダルを閉じる際、カメラの起動ランプを安全に消灯させる後処理 */
 function cleanUpCamera(){
   if (cameraStream) {
     cameraStream.getTracks().forEach(track => track.stop());
@@ -837,6 +862,7 @@ function closeQrScannerModal(){
   closeModal();
 }
 
+
 function triggerMockScan(){
   const frame = document.querySelector('.scan-frame');
   if(frame) frame.style.borderColor = "var(--sage)";
@@ -848,85 +874,6 @@ function triggerMockScan(){
   
   /* ➔ ここで好きなウェブページにジャンプさせます */
   window.location.href = "https://www.google.com"; 
-}
-
-function renderPlans(){
-  const el = document.getElementById("screen-plans");
-
-  el.innerHTML = `
-    <div class="eyebrow" style="margin-top:8px;">SUBSCRIPTION</div>
-    <div class="screen-title" style="margin-top:2px; font-size:24px;">Choose Your Plan</div>
-    <div class="screen-sub">Select a baseline tier to accelerate your cultural adaptation curve. Cancel or modify parameters at any time.</div>
-
-    ${PLANS.map(plan => `
-      <div class="card" style="position:relative; ${plan.popular ? 'border-color:var(--brass); box-shadow:0 6px 18px rgba(200,155,60,0.12);' : ''}">
-        ${plan.popular ? `<div class="chip brass" style="position:absolute; top:14px; right:14px;">Most Popular</div>` : ""}
-        
-        <div style="margin-bottom:10px;">
-          <div style="font-family:var(--display); font-weight:900; font-size:24px; color:var(--ink-navy);">
-            ${escapeHtml(plan.name)}
-          </div>
-          <div style="font-size:13px; font-weight:700; color:var(--text-mute); margin-top:4px;">
-            ${escapeHtml(plan.tagline)}
-          </div>
-        </div>
-
-        <div style="display:flex; align-items:flex-end; gap:6px; margin-bottom:16px;">
-          <div style="font-family:var(--display); font-weight:900; font-size:34px; color:var(--ink-navy);">
-            $${plan.price}
-          </div>
-          <div style="font-size:14px; font-weight:800; color:var(--text-mute); margin-bottom:5px;">
-            / ${escapeHtml(plan.period)}
-          </div>
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
-          ${plan.features.map(feature => `
-            <div style="display:flex; align-items:flex-start; gap:10px;">
-              <div class="chip sage" style="min-width:30px; justify-content:center; padding:4px 8px;">✓</div>
-              <div style="font-size:14px; font-weight:700; line-height:1.45; color:var(--text-main);">
-                ${escapeHtml(feature)}
-              </div>
-            </div>
-          `).join("")}
-        </div>
-
-        <button class="btn ${plan.popular ? 'btn-brass' : 'btn-primary'} btn-block" onclick="selectPlan('${plan.id}')">
-          ${plan.price === 0 ? 'Start Free' : 'Choose ' + escapeHtml(plan.name)}
-        </button>
-      </div>
-    `).join("")}
-  `;
-}
-
-function selectPlan(planId){
-  const plan = PLANS.find(p => p.id === planId);
-  if (!plan) return;
-
-  openModal(`
-    <div class="sheet-handle"></div>
-    <button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
-
-    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px;">
-      ${escapeHtml(plan.name)} Selected
-    </div>
-    <p class="screen-sub" style="margin-bottom:16px;">
-      Review your global navigation parameters before checking out via secure routing protocol.
-    </p>
-
-    <div class="card" style="background:var(--parchment-dim); border:none; box-shadow:none;">
-      <div style="font-size:28px; font-weight:900; color:var(--ink-navy); margin-bottom:6px;">
-        $${plan.price} <span style="font-size:14px; color:var(--text-mute);">/ ${escapeHtml(plan.period)}</span>
-      </div>
-      <div style="font-size:14px; font-weight:700; color:var(--text-main);">
-        ${escapeHtml(plan.tagline)}
-      </div>
-    </div>
-
-    <button class="btn btn-brass btn-block" onclick="closeModal();" style="margin-top:14px;">
-      Confirm Upgrade
-    </button>
-  `);
 }
 
 /* ================================ HOME ==================================== */
@@ -1020,7 +967,7 @@ async function sendCoachMessage(text){
 
   if (text.includes("eye contact")) {
     fullReply = "In many high-context cultural networks, sustained direct eye contact can be subconsciously perceived as confrontational, intrusive, or challenging to authority. Instead, individuals frequently soften their gaze or look slightly away to convey deep respect and maintain absolute interpersonal harmony (**Wa**). It is a calculated act of courtesy, not avoidance.";
-  } else if (text.includes("disagreement")) {
+  } else if (text.includes("disagree")) {
     fullReply = "To successfully navigate conflict here, steer completely away from blunt, public low-context debates. Frame your critique collaboratively rather than direct confrontation. Use softening buffer phrases like *'I see your point, but perhaps we could also look at...'* to preserve individual face (**Mianzi** or **Kao**) while maintaining strong relationship capital.";
   } else if (text.includes("small talk")) {
     fullReply = "Small talk boundaries vary sharply. While some low-context destinations prefer light transactional topics (weather, sports), other collective networks use seemingly intrusive personal questions (age, marital status, family) as a genuine tool to establish trust and map out your relational context. Focus on shared baseline topics to test comfort levels first.";
@@ -1074,12 +1021,12 @@ function renderTrack(){
   const el = document.getElementById("screen-track"); const today = todayStr(); const already = STATE.tracker.find(e => e.date === today); const phase = classifyPhase(STATE.tracker); const values = STATE.tracker.slice(-14).map(e=>e.mood);
   el.innerHTML = `<div class="eyebrow" style="margin-top:8px;">ADJUSTMENT CURVE TRACKER</div><div class="screen-title" style="margin-top:2px; font-size:24px;">Psychological States</div><div class="screen-sub">Dips and rises along the adaptation curve reflect active mental integration, not personal failure.</div>
     <div class="card"><div><span class="chip ${phase.name.includes('Frustration')?'rust':phase.name.includes('Honeymoon')?'brass':'sage'}">${phase.name}</span></div><p style="font-size:13.5px; font-weight:700; line-height:1.55; color:var(--text-mute); margin:10px 0 12px;">${phase.note}</p>${values.length ? sparkline(values) : `<div class="empty-state" style="text-align:center; padding:14px 0;"><span class="msg" style="font-weight:700; color:var(--text-mute);">Your long-term cultural adaptation line will plot here as you track your state.</span></div>`}</div>
-    <div class="section-label">Today's Check-in</div>
+    <div class="section-label">${already ? "Today's Check-in" : "How is your adaptation energy today?"}</div>
     <div class="card"><div class="mood-row" style="display:flex; gap:10px; justify-content:space-between; margin:8px 0 6px;">${MOODS.map(m => `<button class="mood-btn ${((already?already.mood:trackSelectedMood)===m.v)?'selected':''}" style="flex:1; aspect-ratio:1; border-radius:18px; border:2px solid var(--line); background:#fff; font-size:24px; cursor:pointer; transition: all 0.1s;" onclick="pickMood(${m.v})" ${already?'disabled':''}>${m.e}</button>`).join("")}</div>
       <div style="text-align:center; font-size:13px; font-weight:800; color:var(--text-mute); margin-bottom:14px;">${already ? MOODS.find(m=>m.v===already.mood).label : (trackSelectedMood ? MOODS.find(m=>m.v===trackSelectedMood).label : "Select an index mapping closest to your state")}</div>
       ${already ? `${already.note ? `<p style="font-size:14px; font-weight:600; color:var(--text-main); background:var(--parchment-dim); padding:12px; border-radius:16px; margin:0;">${escapeHtml(already.note)}</p>` : ""}<div style="text-align:center; margin-top:8px;"><span class="chip">✓ Logged for today</span></div>` : `<textarea id="trackNote" placeholder="Optional notes — what specific interaction happened today?" rows="2"></textarea><div style="height:12px;"></div><button class="btn btn-brass btn-block" ${trackSelectedMood?'':'disabled'} onclick="saveCheckIn();">Save State</button>`}</div>
     <div class="section-label">TRACKING HISTORY</div>
-    ${STATE.tracker.length === 0 ? `<div class="empty-state"><span class="glyph">🧭</span><div class="msg">Consecutive logs build an accurate blueprint of your adaptation phases over time.</div></div>` : `<div class="card" style="padding:8px 12px;">${STATE.tracker.slice().reverse().slice(0,20).map(e => `<div class="list-item"><div class="li-icon">${MOODS.find(m=>m.v===e.mood).e}</div><div class="li-body"><div class="li-title">${fmtDate(e.date)} ➔ ${MOODS.find(m=>m.v===e.mood).label}</div>${e.note ? `<div class="li-sub">${escapeHtml(e.note)}</div>` : ""}</div></div>`).join("")}</div>`}</div>`;
+    ${STATE.tracker.length === 0 ? `<div class="empty-state"><span class="glyph">🧭</span><div class="msg">Consecutive logs build an accurate blueprint of your adaptation phases over time.</div></div>` : `<div class="card" style="padding:8px 12px;">${STATE.tracker.slice().reverse().slice(0,20).map(e => `<div class="list-item"><div class="li-icon">${MOODS.find(m=>m.v===e.mood).e}</div><div class="li-body"><div class="li-title">${fmtDate(e.date)} ➔ ${MOODS.find(m=>m.v===e.mood).label}</div>${e.note ? `<div class="li-sub">${escapeHtml(e.note)}</div>` : ""}</div></div>`).join("")}</div>`}`;
 }
 function pickMood(v){ trackSelectedMood = v; renderTrack(); }
 async function saveCheckIn(){ const note = document.getElementById("trackNote").value.trim(); STATE.tracker.push({ id:uid(), date: todayStr(), mood: trackSelectedMood, note }); trackSelectedMood = null; await storeSet("tracker-entries", STATE.tracker); renderTrack(); renderHome(); renderGrowth(); }
@@ -1135,6 +1082,56 @@ function renderGrowth(){
       <div class="list-item" onclick="openEditProfile();" style="cursor:pointer;"><div class="li-icon">⚙️</div><div class="li-body"><div class="li-title">Modify Target Route</div><div class="li-sub">Current setup: ${escapeHtml(STATE.profile.home)} ➔ ${escapeHtml(STATE.profile.host)}</div></div>${icon('chevron',16)}</div>
     </div>`; 
 }
+  
+function renderPlans(){
+  const el = document.getElementById("screen-plans");
+
+  el.innerHTML = `
+    <div class="eyebrow" style="margin-top:8px;">SUBSCRIPTION</div>
+    <div class="screen-title" style="margin-top:2px; font-size:24px;">Choose Your Plan</div>
+    <div class="screen-sub">Select a baseline tier to accelerate your cultural adaptation curve. Cancel or modify parameters at any time.</div>
+
+    ${PLANS.map(plan => `
+      <div class="card" style="position:relative; ${plan.popular ? 'border-color:var(--brass); box-shadow:0 6px 18px rgba(200,155,60,0.12);' : ''}">
+        ${plan.popular ? `<div class="chip brass" style="position:absolute; top:14px; right:14px;">Most Popular</div>` : ""}
+        
+        <div style="margin-bottom:10px;">
+          <div style="font-family:var(--display); font-weight:900; font-size:24px; color:var(--ink-navy);">
+            ${escapeHtml(plan.name)}
+          </div>
+          <div style="font-size:13px; font-weight:700; color:var(--text-mute); margin-top:4px;">
+            ${escapeHtml(plan.tagline)}
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:flex-end; gap:6px; margin-bottom:16px;">
+          <div style="font-family:var(--display); font-weight:900; font-size:34px; color:var(--ink-navy);">
+            $${plan.price}
+          </div>
+          <div style="font-size:14px; font-weight:800; color:var(--text-mute); margin-bottom:5px;">
+            / ${escapeHtml(plan.period)}
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+          ${plan.features.map(feature => `
+            <div style="display:flex; align-items:flex-start; gap:10px;">
+              <div class="chip sage" style="min-width:30px; justify-content:center; padding:4px 8px;">✓</div>
+              <div style="font-size:14px; font-weight:700; line-height:1.45; color:var(--text-main);">
+                ${escapeHtml(feature)}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+
+        <button class="btn ${plan.popular ? 'btn-brass' : 'btn-primary'} btn-block" onclick="selectPlan('${plan.id}')">
+          ${plan.price === 0 ? 'Start Free' : 'Choose ' + escapeHtml(plan.name)}
+        </button>
+      </div>
+    `).join("")}
+  `;
+}
+
 
 let quizAnswers = []; let quizIndex = 0;
 function startQuiz(){ quizAnswers = new Array(DMIS_QUESTIONS.length).fill(null); quizIndex = 0; renderQuiz(); }
@@ -1176,6 +1173,37 @@ async function runTranslate(){
     resultEl.innerHTML = `<p style="margin-top:14px; font-size:13.5px; font-weight:700; color:var(--rust);">Data error. Please verify network access and try again.</p>`;
   }
 }
+
+function selectPlan(planId){
+  const plan = PLANS.find(p => p.id === planId);
+  if (!plan) return;
+
+  openModal(`
+    <div class="sheet-handle"></div>
+    <button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
+
+    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px;">
+      ${escapeHtml(plan.name)} Selected
+    </div>
+    <p class="screen-sub" style="margin-bottom:16px;">
+      Review your global navigation parameters before checking out via secure routing protocol.
+    </p>
+
+    <div class="card" style="background:var(--parchment-dim); border:none; box-shadow:none;">
+      <div style="font-size:28px; font-weight:900; color:var(--ink-navy); margin-bottom:6px;">
+        $${plan.price} <span style="font-size:14px; color:var(--text-mute);">/ ${escapeHtml(plan.period)}</span>
+      </div>
+      <div style="font-size:14px; font-weight:700; color:var(--text-main);">
+        ${escapeHtml(plan.tagline)}
+      </div>
+    </div>
+
+    <button class="btn btn-brass btn-block" onclick="closeModal();" style="margin-top:14px;">
+      Confirm Upgrade
+    </button>
+  `);
+}
+
 
 boot();
 </script>
