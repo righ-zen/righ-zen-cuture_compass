@@ -193,8 +193,8 @@
     transition:color 0.15s ease;
   }
   .tab svg{width:22px; height:22px; stroke:var(--text-mute); stroke-width:2.2; transition:stroke 0.15s ease;}
-  .tab.active{color:var(--ink-navy);}
-  .tab.active svg{stroke:var(--brass); fill: rgba(200,155,60,0.1);}
+  .tabbar .tab.active{color:var(--ink-navy) !important;}
+  .tabbar .tab.active svg{stroke:var(--brass) !important; fill: rgba(200,155,60,0.1) !important;}
 
   /* ---------- onboarding overlay ---------- */
   .overlay{
@@ -289,17 +289,17 @@
     display:block;
   }
 
-  .dial-wrap{ 
-    text-align:center !important; 
-    padding:6px 0 2px; 
+  .dial-wrap{
+    text-align:center !important;
+    padding:6px 0 2px;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
   }
-  .needle{ 
-    transition: transform 1s cubic-bezier(.22,1,.36,1); 
+  .needle{
+    transition: transform 1s cubic-bezier(.22,1,.36,1);
   }
 
   .chat-scroll {
@@ -335,6 +335,7 @@
     border-radius: 24px;
   }
 
+  /* ---------- ダミースキャン画面 ---------- */
   .camera-view {
     width: 100%;
     height: 240px;
@@ -404,11 +405,17 @@
 
   .quiz-progress{height:12px; border-radius:10px; background:var(--parchment-dim); overflow:hidden; margin-bottom:20px; border: 2px solid var(--line);}
   .quiz-progress-fill{height:100%; background:var(--brass); border-radius:8px; transition:width 0.25s ease;}
+  .quiz-opt:hover{border-color:var(--brass) !important;}
 
   /* chat */
   .bubble{max-width:82%; padding:12px 16px; border-radius:20px; font-size:14.5px; line-height:1.5; font-weight:600;}
   .bubble.user{align-self:flex-end; background:var(--ink-navy); color:var(--parchment); border-bottom-right-radius:4px;}
   .bubble.ai{align-self:flex-start; background:#fff; border:2px solid var(--line); color:var(--text-main); border-bottom-left-radius:4px;}
+
+  .empty-state{text-align:center; padding:34px 14px;}
+  .empty-state .glyph{font-size:32px; display:block; margin-bottom:8px;}
+  .empty-state .msg{font-weight:700; color:var(--text-mute); font-size:13.5px; line-height:1.5;}
+  .mood-btn.selected{border-color:var(--brass) !important; background:rgba(200,155,60,0.14) !important; transform:translateY(-2px);}
 </style>
 </head>
 <body>
@@ -615,9 +622,11 @@ function buildTabBar(){
 function switchTab(id){
   activeTab = id; 
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); 
-  document.getElementById("screen-"+id).classList.add("active");
+  const targetScreen = document.getElementById("screen-"+id);
+  if (targetScreen) targetScreen.classList.add("active");
   document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
-  document.getElementById("tab-" + id).classList.add("active");
+  const targetTab = document.getElementById("tab-" + id);
+  if (targetTab) targetTab.classList.add("active");
   if (id==="coach") scrollChatToBottom();
 }
 
@@ -628,7 +637,7 @@ function renderOnboarding(){
   if (onboardingStep === 0){
     body = `<div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:24px;">
         ${compassDialSVG(null, {size:190})}
-        <div class="eyebrow" style="margin-top:166px; color:var(--brass-light);">DMIS-Guided Intercultural Coaching</div>
+        <div class="eyebrow" style="margin-top:16px; color:var(--brass-light);">DMIS-Guided Intercultural Coaching</div>
         <h1 style="font-family:var(--display); font-weight:900; font-size:34px; margin:12px 0 6px;">CultureCompass</h1>
         <p style="font-size:15px; line-height:1.6; color:rgba(247,242,231,0.8); max-width:290px;">
           Navigate new cultures. Understand the unwritten rules.
@@ -674,47 +683,14 @@ function renderOnboarding(){
   scroll.innerHTML = body; footer.innerHTML = footerHtml;
 }
 
-/* ==================== ONBOARDING INTERACTION HANDLERS ==================== */
-function obSaveName() {
-  const input = document.getElementById("ob-name");
-  if (!input || !input.value.trim()) {
-    alert("Please enter your name to proceed.");
-    return;
-  }
-  onboardingDraft.name = input.value.trim();
-  onboardingStep = 2;
-  renderOnboarding();
-}
-
-function obSaveHome() {
-  const select = document.getElementById("ob-home");
-  if (!select || !select.value) {
-    alert("Please select your home culture.");
-    return;
-  }
-  onboardingDraft.home = select.value;
-  onboardingStep = 3;
-  renderOnboarding();
-}
-
-function obSaveHost() {
-  const select = document.getElementById("ob-host");
-  if (!select || !select.value) {
-    alert("Please select your host culture.");
-    return;
-  }
-  onboardingDraft.host = select.value;
-  onboardingStep = 4;
-  renderOnboarding();
-}
-
-async function finishOnboarding() {
-  STATE.profile = {
-    name: onboardingDraft.name,
-    home: onboardingDraft.home,
-    host: onboardingDraft.host,
-    createdAt: todayStr()
-  };
+/* --- These four functions drive the onboarding step-by-step flow.
+       They were missing in the last version, which is why "Continue"
+       did nothing past the name step and the app never got past onboarding. --- */
+function obSaveName(){ onboardingDraft.name = document.getElementById("ob-name").value.trim() || "Traveler"; onboardingStep = 2; renderOnboarding(); }
+function obSaveHome(){ const v = document.getElementById("ob-home").value; if (!v) return; onboardingDraft.home = v; onboardingStep = 3; renderOnboarding(); }
+function obSaveHost(){ const v = document.getElementById("ob-host").value; if (!v) return; onboardingDraft.host = v; onboardingStep = 4; renderOnboarding(); }
+async function finishOnboarding(){
+  STATE.profile = { name: onboardingDraft.name, home: onboardingDraft.home, host: onboardingDraft.host, createdAt: todayStr() };
   await persistUserState();
   document.getElementById("onboarding").classList.add("hidden");
   renderAll();
@@ -770,8 +746,10 @@ async function resetApp(){
 
 async function toggleChallenge(dateStr){
   const c = STATE.challenges;
-  if (c.completedDates[dateStr]){ delete c.completedDates[dateStr]; } else { c.completedDates[dateStr] = true; let streak = 0; let d = new Date(dateStr + "T00:00:00"); while (c.completedDates[todayStr(d)]){ streak++; d.setDate(d.getDate()-1); } c.streak = streak; c.lastDate = dateStr; }
-  if (!c.completedDates[dateStr]) { let streak = 0; let d = new Date(todayStr()+"T00:00:00"); while (c.completedDates[todayStr(d)]){ streak++; d.setDate(d.getDate()-1); } c.streak = streak; }
+  if (c.completedDates[dateStr]){ delete c.completedDates[dateStr]; } else { c.completedDates[dateStr] = true; }
+  let streak = 0; let d = new Date(todayStr()+"T00:00:00");
+  while (c.completedDates[todayStr(d)]){ streak++; d.setDate(d.getDate()-1); }
+  c.streak = streak; c.lastDate = dateStr;
   await storeSet("challenges-state", c); renderHome(); renderGrowth();
 }
 
@@ -884,7 +862,7 @@ async function sendCoachMessage(text){
 
   if (text.includes("eye contact")) {
     fullReply = "In many high-context cultural networks, sustained direct eye contact can be subconsciously perceived as confrontational, intrusive, or challenging to authority. Instead, individuals frequently soften their gaze or look slightly away to convey deep respect and maintain absolute interpersonal harmony (**Wa**). It is a calculated act of courtesy, not avoidance.";
-  } else if (text.includes("disagreement")) {
+  } else if (text.includes("disagree")) {
     fullReply = "To successfully navigate conflict here, steer completely away from blunt, public low-context debates. Frame your critique collaboratively rather than direct confrontation. Use softening buffer phrases like *'I see your point, but perhaps we could also look at...'* to preserve individual face (**Mianzi** or **Kao**) while maintaining strong relationship capital.";
   } else if (text.includes("small talk")) {
     fullReply = "Small talk boundaries vary sharply. While some low-context destinations prefer light transactional topics (weather, sports), other collective networks use seemingly intrusive personal questions (age, marital status, family) as a genuine tool to establish trust and map out your relational context. Focus on shared baseline topics to test comfort levels first.";
@@ -938,6 +916,7 @@ function renderTrack(){
   const el = document.getElementById("screen-track"); const today = todayStr(); const already = STATE.tracker.find(e => e.date === today); const phase = classifyPhase(STATE.tracker); const values = STATE.tracker.slice(-14).map(e=>e.mood);
   el.innerHTML = `<div class="eyebrow" style="margin-top:8px;">ADJUSTMENT CURVE TRACKER</div><div class="screen-title" style="margin-top:2px; font-size:24px;">Psychological States</div><div class="screen-sub">Dips and rises along the adaptation curve reflect active mental integration, not personal failure.</div>
     <div class="card"><div><span class="chip ${phase.name.includes('Frustration')?'rust':phase.name.includes('Honeymoon')?'brass':'sage'}">${phase.name}</span></div><p style="font-size:13.5px; font-weight:700; line-height:1.55; color:var(--text-mute); margin:10px 0 12px;">${phase.note}</p>${values.length ? sparkline(values) : `<div class="empty-state" style="text-align:center; padding:14px 0;"><span class="msg" style="font-weight:700; color:var(--text-mute);">Your long-term cultural adaptation line will plot here as you track your state.</span></div>`}</div>
+    <div class="section-label">${already ? "Today's Check-in" : "How is your adaptation energy today?"}</div>
     <div class="card"><div class="mood-row" style="display:flex; gap:10px; justify-content:space-between; margin:8px 0 6px;">${MOODS.map(m => `<button class="mood-btn ${((already?already.mood:trackSelectedMood)===m.v)?'selected':''}" style="flex:1; aspect-ratio:1; border-radius:18px; border:2px solid var(--line); background:#fff; font-size:24px; cursor:pointer; transition: all 0.1s;" onclick="pickMood(${m.v})" ${already?'disabled':''}>${m.e}</button>`).join("")}</div>
       <div style="text-align:center; font-size:13px; font-weight:800; color:var(--text-mute); margin-bottom:14px;">${already ? MOODS.find(m=>m.v===already.mood).label : (trackSelectedMood ? MOODS.find(m=>m.v===trackSelectedMood).label : "Select an index mapping closest to your state")}</div>
       ${already ? `${already.note ? `<p style="font-size:14px; font-weight:600; color:var(--text-main); background:var(--parchment-dim); padding:12px; border-radius:16px; margin:0;">${escapeHtml(already.note)}</p>` : ""}<div style="text-align:center; margin-top:8px;"><span class="chip">✓ Logged for today</span></div>` : `<textarea id="trackNote" placeholder="Optional notes — what specific interaction happened today?" rows="2"></textarea><div style="height:12px;"></div><button class="btn btn-brass btn-block" ${trackSelectedMood?'':'disabled'} onclick="saveCheckIn();">Save State</button>`}</div>
@@ -976,13 +955,7 @@ async function deleteEntry(id){ STATE.journal = STATE.journal.filter(e => e.id !
 
 /* ================================ GROWTH =================================== */
 function renderGrowth(){
-  const el = document.getElementById("screen-growth"); const today = todayStr(); const challengeIdx = dayOfYear(new Date()) % CHALLENGES.length;
-  
-  // profile.createdAtが存在しない場合のセーフティ
-  const baseDateStr = (STATE.profile && STATE.profile.createdAt) ? STATE.profile.createdAt : today;
-  const daysActive = Math.max(1, Math.round((new Date(today) - new Date(baseDateStr))/86400000)+1);
-  
-  const values = STATE.tracker.slice(-14).map(e=>e.mood);
+  const el = document.getElementById("screen-growth"); const today = todayStr(); const challengeIdx = dayOfYear(new Date()) % CHALLENGES.length; const daysActive = STATE.profile ? Math.max(1, Math.round((new Date(today) - new Date(STATE.profile.createdAt))/86400000)+1) : 1; const values = STATE.tracker.slice(-14).map(e=>e.mood);
   el.innerHTML = `<div class="eyebrow" style="margin-top:8px;">DMIS ASSESSMENT SCHEMA</div><div class="screen-title" style="margin-top:2px; font-size:24px;">Development Visible</div><div class="screen-sub">Tracking orientation changes across Milton Bennett's Developmental Model of Intercultural Sensitivity.</div>
     <div class="card"><div class="dial-wrap">${compassDialSVG(STATE.dmis ? STATE.dmis.stageIndex : null, {size:190})}
         ${STATE.dmis ? `<div class="dial-stage-name" style="font-weight:900; font-size:20px; color:var(--ink-navy); margin-top:6px;">${DMIS_STAGES[STATE.dmis.stageIndex].name}</div><div class="dial-stage-group" style="font-weight:800; font-size:12px; color:var(--brass); margin-top:2px;">Metric Score: ${STATE.dmis.score} / 60 (Stage: ${DMIS_STAGES[STATE.dmis.stageIndex].group})</div><p style="font-size:13.5px; font-weight:700; color:var(--text-mute); line-height:1.6; margin:12px 4px 14px;">${DMIS_STAGES[STATE.dmis.stageIndex].blurb}</p>` : `<div class="dial-stage-name" style="font-weight:900; font-size:17px; margin-top:6px;">Sensitivity Level Unmeasured</div><div class="dial-stage-group" style="color:var(--brass); font-weight:800; font-size:11px;">Complete the core self-assessment to map your developmental frame.</div><div style="height:12px;"></div>`}</div>
