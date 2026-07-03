@@ -441,6 +441,7 @@
     <div class="screen" id="screen-track"></div>
     <div class="screen" id="screen-journal"></div>
     <div class="screen" id="screen-growth"></div>
+    <div class="screen" id="screen-plans"></div>
   </div>
 
   <div class="tabbar" id="tabbar"></div>
@@ -582,6 +583,7 @@ const ICONS = {
   track: '<path d="M3 12h3.5l2-6 4 13 2.2-9.5 1.6 2.5H21"/>',
   journal: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H17a1.5 1.5 0 0 1 1.5 1.5v16L15 18l-3.5 2.5L8 18l-3 2.5z"/><path d="M8 8h7M8 11.3h5"/>',
   growth: '<circle cx="12" cy="12" r="9"/><path d="M12 8.3 14 12l-2 3.7L10 12z"/>',
+  card: '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19"/><path d="M6 14.5h4"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.6 7.6 0 0 0 .06-1 7.6 7.6 0 0 0-.06-1l2.1-1.65-2-3.46-2.5 1a7.6 7.6 0 0 0-1.73-1L14.9 3h-4l-.37 2.9a7.6 7.6 0 0 0-1.73 1l-2.5-1-2 3.46L6.4 11a7.6 7.6 0 0 0 0 2l-2.1 1.65 2 3.46 2.5-1c.53.43 1.12.77 1.73 1L10.9 21h4l.37-2.9c.61-.23 1.2-.57 1.73-1l2.5 1 2-3.46z"/>',
   send: '<path d="M4 12 20 4 13 20l-2-7z"/><path d="M4 12l7 1"/>',
   check: '<path d="M4 12.5 9 17l11-11"/>',
@@ -592,7 +594,7 @@ const ICONS = {
 };
 function icon(name, size){ return `<svg viewBox="0 0 24 24" width="${size||22}" height="${size||22}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`; }
 
-const TABS = [{ id:"home", label:"Home", icon:"home" }, { id:"coach", label:"Coach", icon:"coach" }, { id:"track", label:"Track", icon:"track" }, { id:"journal", label:"Journal", icon:"journal" }, { id:"growth", label:"Growth", icon:"growth" }];
+const TABS = [{ id:"home", label:"Home", icon:"home" }, { id:"coach", label:"Coach", icon:"coach" }, { id:"track", label:"Track", icon:"track" }, { id:"journal", label:"Journal", icon:"journal" }, { id:"growth", label:"Growth", icon:"growth" }, { id:"plans", label:"Plans", icon:"card" }];
 
 let STATE = { profile: null, dmis: null, tracker: [], journal: [], challenges: { completedDates:{}, streak:0, lastDate:null }, coachHistory: [] };
 let activeTab = "home"; let onboardingStep = 0; let onboardingDraft = { name:"", home:"", host:"" };
@@ -647,7 +649,7 @@ async function boot(){
   if (!STATE.profile){ onboardingStep = 0; renderOnboarding(); } else { document.getElementById("onboarding").classList.add("hidden"); renderAll(); }
 }
 async function persistUserState(){ await storeSet("user-state", { profile: STATE.profile, dmis: STATE.dmis }); }
-function renderAll(){ renderHome(); renderCoach(); renderTrack(); renderJournal(); renderGrowth(); }
+function renderAll(){ renderHome(); renderCoach(); renderTrack(); renderJournal(); renderGrowth(); renderPlans(); }
 
 function buildTabBar(){
   const bar = document.getElementById("tabbar");
@@ -853,9 +855,10 @@ function renderHome(){
       <div class="list-item" onclick="switchTab('coach')" style="cursor:pointer;">
         <div class="li-icon" style="background:#e8f0fe;">💬</div><div class="li-body"><div class="li-title">Consult AI Cultural Coach</div><div class="li-sub">Deconstruct subtle friction points structurally</div></div>${icon('chevron',16)}
       </div>
-      <div class="list-item" onclick="switchTab('track')" style="cursor:pointer;">
-        <div class="li-icon" style="background:#e6f4ea;">📈</div><div class="li-body"><div class="li-title">Log Current State</div><div class="li-sub">Map everyday psychological adaptation fluctuations</div></div>${icon('chevron',16)}
+      <div class="list-item" onclick="switchTab('plans')" style="cursor:pointer;">
+       <div class="li-icon" style="background:#fff4db;">💳</div><div class="li-body"><div class="li-title">View Subscription Plans</div><div class="li-sub">Compare demo tiers and premium features</div></div>${icon('chevron',16)}
       </div>
+
     </div>`;
 }
 
@@ -1012,8 +1015,58 @@ function renderGrowth(){
       <div class="list-item" onclick="openQrScanner();" style="cursor:pointer;"><div class="li-icon">📷</div><div class="li-body"><div class="li-title">Scan QR / Barcode</div><div class="li-sub">Extended visual scanner for host artifacts</div></div>${icon('chevron',16)}</div>
       <div class="list-item" onclick="openTranslate();" style="cursor:pointer;"><div class="li-icon">🗣️</div><div class="li-body"><div class="li-title">One-Tap Translation Tool</div><div class="li-sub">Rapid situational phrase alignment utility</div></div>${icon('chevron',16)}</div>
       <div class="list-item" onclick="openEditProfile();" style="cursor:pointer;"><div class="li-icon">⚙️</div><div class="li-body"><div class="li-title">Modify Target Route</div><div class="li-sub">Current setup: ${escapeHtml(STATE.profile.home)} ➔ ${escapeHtml(STATE.profile.host)}</div></div>${icon('chevron',16)}</div>
-    </div>`;
+    </div>`; 
 }
+  
+function renderPlans(){
+  const el = document.getElementById("screen-plans");
+
+  el.innerHTML = `
+    <div class="eyebrow" style="margin-top:8px;">SUBSCRIPTION</div>
+    <div class="screen-title" style="margin-top:2px; font-size:24px;">Choose Your Plan</div>
+    <div class="screen-sub">Dummy pricing screen for presentation purposes only. No actual billing will occur.</div>
+
+    ${PLANS.map(plan => `
+      <div class="card" style="position:relative; ${plan.popular ? 'border-color:var(--brass); box-shadow:0 6px 18px rgba(200,155,60,0.12);' : ''}">
+        ${plan.popular ? `<div class="chip brass" style="position:absolute; top:14px; right:14px;">Most Popular</div>` : ""}
+        
+        <div style="margin-bottom:10px;">
+          <div style="font-family:var(--display); font-weight:900; font-size:24px; color:var(--ink-navy);">
+            ${escapeHtml(plan.name)}
+          </div>
+          <div style="font-size:13px; font-weight:700; color:var(--text-mute); margin-top:4px;">
+            ${escapeHtml(plan.tagline)}
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:flex-end; gap:6px; margin-bottom:16px;">
+          <div style="font-family:var(--display); font-weight:900; font-size:34px; color:var(--ink-navy);">
+            \$${plan.price}
+          </div>
+          <div style="font-size:14px; font-weight:800; color:var(--text-mute); margin-bottom:5px;">
+            / ${escapeHtml(plan.period)}
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+          ${plan.features.map(feature => `
+            <div style="display:flex; align-items:flex-start; gap:10px;">
+              <div class="chip sage" style="min-width:30px; justify-content:center; padding:4px 8px;">✓</div>
+              <div style="font-size:14px; font-weight:700; line-height:1.45; color:var(--text-main);">
+                ${escapeHtml(feature)}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+
+        <button class="btn ${plan.popular ? 'btn-brass' : 'btn-primary'} btn-block" onclick="selectPlan('${plan.id}')">
+          ${plan.price === 0 ? 'Start Free' : 'Choose ' + escapeHtml(plan.name)}
+        </button>
+      </div>
+    `).join("")}
+  `;
+}
+
 
 let quizAnswers = []; let quizIndex = 0;
 function startQuiz(){ quizAnswers = new Array(DMIS_QUESTIONS.length).fill(null); quizIndex = 0; renderQuiz(); }
@@ -1055,6 +1108,37 @@ async function runTranslate(){
     resultEl.innerHTML = `<p style="margin-top:14px; font-size:13.5px; font-weight:700; color:var(--rust);">Data error. Please verify network access and try again.</p>`;
   }
 }
+
+function selectPlan(planId){
+  const plan = PLANS.find(p => p.id === planId);
+  if (!plan) return;
+
+  openModal(`
+    <div class="sheet-handle"></div>
+    <button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
+
+    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px;">
+      ${escapeHtml(plan.name)} Selected
+    </div>
+    <p class="screen-sub" style="margin-bottom:16px;">
+      This is a dummy subscription flow for prototype/demo use only.
+    </p>
+
+    <div class="card" style="background:var(--parchment-dim); border:none; box-shadow:none;">
+      <div style="font-size:28px; font-weight:900; color:var(--ink-navy); margin-bottom:6px;">
+        \$${plan.price} <span style="font-size:14px; color:var(--text-mute);">/ ${escapeHtml(plan.period)}</span>
+      </div>
+      <div style="font-size:14px; font-weight:700; color:var(--text-main);">
+        ${escapeHtml(plan.tagline)}
+      </div>
+    </div>
+
+    <button class="btn btn-brass btn-block" onclick="closeModal();" style="margin-top:14px;">
+      Confirm Dummy Upgrade
+    </button>
+  `);
+}
+
 
 boot();
 </script>
