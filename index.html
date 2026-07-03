@@ -541,7 +541,7 @@ const QUICK_PROMPTS = [
 ];
 
 /* Dummy subscription plans for presentation purposes only — no real billing. */
-cconst PLANS = [
+const PLANS = [
   {
     id: "wanderer", name: "Wanderer", price: 0, period: "forever",
     tagline: "Get your bearings",
@@ -588,85 +588,6 @@ cconst PLANS = [
   }
 ];
 
-function renderPlans(){
-  const el = document.getElementById("screen-plans");
-
-  el.innerHTML = `
-    <div class="eyebrow" style="margin-top:8px;">SUBSCRIPTION</div>
-    <div class="screen-title" style="margin-top:2px; font-size:24px;">Choose Your Plan</div>
-    <div class="screen-sub">Select a baseline tier to accelerate your cultural adaptation curve. Cancel or modify parameters at any time.</div>
-
-    ${PLANS.map(plan => `
-      <div class="card" style="position:relative; ${plan.popular ? 'border-color:var(--brass); box-shadow:0 6px 18px rgba(200,155,60,0.12);' : ''}">
-        ${plan.popular ? `<div class="chip brass" style="position:absolute; top:14px; right:14px;">Most Popular</div>` : ""}
-        
-        <div style="margin-bottom:10px;">
-          <div style="font-family:var(--display); font-weight:900; font-size:24px; color:var(--ink-navy);">
-            ${escapeHtml(plan.name)}
-          </div>
-          <div style="font-size:13px; font-weight:700; color:var(--text-mute); margin-top:4px;">
-            ${escapeHtml(plan.tagline)}
-          </div>
-        </div>
-
-        <div style="display:flex; align-items:flex-end; gap:6px; margin-bottom:16px;">
-          <div style="font-family:var(--display); font-weight:900; font-size:34px; color:var(--ink-navy);">
-            $${plan.price}
-          </div>
-          <div style="font-size:14px; font-weight:800; color:var(--text-mute); margin-bottom:5px;">
-            / ${escapeHtml(plan.period)}
-          </div>
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
-          ${plan.features.map(feature => `
-            <div style="display:flex; align-items:flex-start; gap:10px;">
-              <div class="chip sage" style="min-width:30px; justify-content:center; padding:4px 8px;">✓</div>
-              <div style="font-size:14px; font-weight:700; line-height:1.45; color:var(--text-main);">
-                ${escapeHtml(feature)}
-              </div>
-            </div>
-          `).join("")}
-        </div>
-
-        <button class="btn ${plan.popular ? 'btn-brass' : 'btn-primary'} btn-block" onclick="selectPlan('${plan.id}')">
-          ${plan.price === 0 ? 'Start Free' : 'Choose ' + escapeHtml(plan.name)}
-        </button>
-      </div>
-    `).join("")}
-  `;
-}
-
-function selectPlan(planId){
-  const plan = PLANS.find(p => p.id === planId);
-  if (!plan) return;
-
-  openModal(`
-    <div class="sheet-handle"></div>
-    <button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
-
-    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px;">
-      ${escapeHtml(plan.name)} Selected
-    </div>
-    <p class="screen-sub" style="margin-bottom:16px;">
-      Review your global navigation parameters before checking out via secure routing protocol.
-    </p>
-
-    <div class="card" style="background:var(--parchment-dim); border:none; box-shadow:none;">
-      <div style="font-size:28px; font-weight:900; color:var(--ink-navy); margin-bottom:6px;">
-        $${plan.price} <span style="font-size:14px; color:var(--text-mute);">/ ${escapeHtml(plan.period)}</span>
-      </div>
-      <div style="font-size:14px; font-weight:700; color:var(--text-main);">
-        ${escapeHtml(plan.tagline)}
-      </div>
-    </div>
-
-    <button class="btn btn-brass btn-block" onclick="closeModal();" style="margin-top:14px;">
-      Confirm Upgrade
-    </button>
-  `);
-}
-  
 const ICONS = {
   home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H10v-5.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V20h3.5a1 1 0 0 0 1-1v-9"/>',
   coach: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z"/>',
@@ -1215,6 +1136,36 @@ function renderPlans(){
       </div>
     `).join("")}
   `;
+}
+
+function selectPlan(planId){
+  const plan = PLANS.find(p => p.id === planId);
+  if (!plan) return;
+
+  openModal(`
+    <div class="sheet-handle"></div>
+    <button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>
+
+    <div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px;">
+      ${escapeHtml(plan.name)} Selected
+    </div>
+    <p class="screen-sub" style="margin-bottom:16px;">
+      Review your global navigation parameters before checking out via secure routing protocol.
+    </p>
+
+    <div class="card" style="background:var(--parchment-dim); border:none; box-shadow:none;">
+      <div style="font-size:28px; font-weight:900; color:var(--ink-navy); margin-bottom:6px;">
+        $${plan.price} <span style="font-size:14px; color:var(--text-mute);">/ ${escapeHtml(plan.period)}</span>
+      </div>
+      <div style="font-size:14px; font-weight:700; color:var(--text-main);">
+        ${escapeHtml(plan.tagline)}
+      </div>
+    </div>
+
+    <button class="btn btn-brass btn-block" onclick="closeModal();" style="margin-top:14px;">
+      Confirm Upgrade
+    </button>
+  `);
 }
 
 
