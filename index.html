@@ -792,23 +792,83 @@ async function toggleChallenge(dateStr){
   await storeSet("challenges-state", c); renderHome(); renderGrowth();
 }
 
+/* モーダルを開いた際、スマホの実機カメラを起動して映像をシームレスに流し込む */
+let cameraStream = null; // カメラのストリームを管理するグローバル変数
+
 function openQrScanner(){
-  openModal('<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeModal();">✕</button>' +
+  openModal('<div class="sheet-handle"></div><button class="sheet-close" style="position:absolute; top:18px; right:18px;" onclick="closeQrScannerModal();">✕</button>' +
     '<div class="sheet-title" style="font-family:var(--display); font-weight:900; font-size:22px; margin-bottom:4px;">Scan QR / Barcode</div>' +
     '<p class="screen-sub" style="margin-bottom:16px;">Calibration & Extended Context Analyzer</p>' +
     '<div class="camera-view">' +
-      '<div class="scan-frame"></div>' +
-      '<p style="font-family:var(--mono); font-size:12px; font-weight:600; color:rgba(255,255,255,0.7); position:absolute; bottom:16px;">Align code within the frame</p>' +
+      /* 真っ黒な背景の上に、実機のビデオ映像を重ねるためのvideoタグを配置 */
+      '<video id="webcamVideo" autoplay playsinline style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;"></video>' +
+      '<div class="scan-frame" style="z-index:2;"></div>' +
+      '<p style="font-family:var(--mono); font-size:12px; font-weight:600; color:rgba(255,255,255,0.7); position:absolute; bottom:16px; z-index:2;">Align code within the frame</p>' +
     '</div>' +
     '<div style="height:16px;"></div>' +
     '<button class="btn btn-primary btn-block" onclick="triggerMockScan();">⚡ Simulate Scan Match</button>');
+
+  /* 画面に要素が配置された直後に、デバイスのカメラにアクセスを要求 */
+  setTimeout(async () => {
+    const videoEl = document.getElementById("webcamVideo");
+    if (!videoEl) return;
+    
+    try {
+      /* 背面カメラ（environment）の起動を最優先でリクエスト */
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false
+      });
+      videoEl.srcObject = cameraStream;
+    } catch (err) {
+      console.log("Rear camera nested routing failed, trying fallback...", err);
+      try {
+        /* 背面カメラが無い・使えない場合は標準のカメラを起動 */
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        videoEl.srcObject = cameraStream;
+      } catch (fallbackErr) {
+        /* 完全に拒否された、または非対応端末用のエラー表示 */
+        videoEl.style.display = "none";
+        const errorMsg = document.createElement("p");
+        errorMsg.style.cssText = "position:absolute; z-index:2; color:var(--rust); font-size:13px; font-weight:700; text-align:center; padding:20px;";
+        errorMsg.textContent = "Camera access denied or unmapped connection protocol.";
+        document.querySelector(".camera-view").appendChild(errorMsg);
+      }
+    }
+  }, 50);
+}
+
+/* モーダルを閉じる際、カメラの起動ランプを安全に消灯させる後処理 */
+function cleanUpCamera(){
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+}
+
+function closeQrScannerModal(){
+  cleanUpCamera();
+  closeModal();
 }
 
 function triggerMockScan(){
   const frame = document.querySelector('.scan-frame');
   if(frame) frame.style.borderColor = "var(--sage)";
   alert("Code recognized! [ID: CC-4091] -> Calibration unlock prompt triggered.");
-  closeModal();
+  closeQrScannerModal();
+}
+
+function triggerMockScan(){
+  const frame = document.querySelector('.scan-frame');
+  if(frame) frame.style.borderColor = "var(--sage)";
+  
+  alert("Code recognized! [ID: CC-4091] -> Opening extended cultural guidelines.");
+  
+  /* カメラを安全に停止させてモーダルを閉じる */
+  closeQrScannerModal();
+  
+  /* ➔ ここで好きなウェブページにジャンプさせます */
+  window.location.href = "https://www.google.com"; 
 }
 
 /* ================================ HOME ==================================== */
