@@ -1024,7 +1024,7 @@ function renderPlans(){
   el.innerHTML = `
     <div class="eyebrow" style="margin-top:8px;">SUBSCRIPTION</div>
     <div class="screen-title" style="margin-top:2px; font-size:24px;">Choose Your Plan</div>
-    <div class="screen-sub">Dummy pricing screen for presentation purposes only. No actual billing will occur.</div>
+    <div class="screen-sub">Select a baseline tier to accelerate your cultural adaptation curve. Cancel or modify parameters at any time.</div>
 
     ${PLANS.map(plan => `
       <div class="card" style="position:relative; ${plan.popular ? 'border-color:var(--brass); box-shadow:0 6px 18px rgba(200,155,60,0.12);' : ''}">
@@ -1041,7 +1041,7 @@ function renderPlans(){
 
         <div style="display:flex; align-items:flex-end; gap:6px; margin-bottom:16px;">
           <div style="font-family:var(--display); font-weight:900; font-size:34px; color:var(--ink-navy);">
-            \$${plan.price}
+            $${plan.price}
           </div>
           <div style="font-size:14px; font-weight:800; color:var(--text-mute); margin-bottom:5px;">
             / ${escapeHtml(plan.period)}
@@ -1121,12 +1121,12 @@ function selectPlan(planId){
       ${escapeHtml(plan.name)} Selected
     </div>
     <p class="screen-sub" style="margin-bottom:16px;">
-      This is a dummy subscription flow for prototype/demo use only.
+      Review your global navigation parameters before checking out via secure routing protocol.
     </p>
 
     <div class="card" style="background:var(--parchment-dim); border:none; box-shadow:none;">
       <div style="font-size:28px; font-weight:900; color:var(--ink-navy); margin-bottom:6px;">
-        \$${plan.price} <span style="font-size:14px; color:var(--text-mute);">/ ${escapeHtml(plan.period)}</span>
+        $${plan.price} <span style="font-size:14px; color:var(--text-mute);">/ ${escapeHtml(plan.period)}</span>
       </div>
       <div style="font-size:14px; font-weight:700; color:var(--text-main);">
         ${escapeHtml(plan.tagline)}
