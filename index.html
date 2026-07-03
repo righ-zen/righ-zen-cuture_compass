@@ -796,7 +796,7 @@ function openQrScanner(){
       '<div class="scan-frame" style="z-index:2;"></div>' +
       '<p style="font-family:var(--mono); font-size:12px; font-weight:600; color:rgba(255,255,255,0.7); position:absolute; bottom:16px; z-index:2;">Align code within the frame</p>' +
     '</div>' +
-'<div style="height:16px;"></div>' +
+    '<div style="height:16px;"></div>' +
     '<button class="btn btn-primary btn-block" onclick="triggerMockScan();">⚡ Simulate Scan Match</button>');
 
   setTimeout(async () => {
@@ -1020,7 +1020,7 @@ async function sendCoachMessage(text){
 
   if (text.includes("eye contact")) {
     fullReply = "In many high-context cultural networks, sustained direct eye contact can be subconsciously perceived as confrontational, intrusive, or challenging to authority. Instead, individuals frequently soften their gaze or look slightly away to convey deep respect and maintain absolute interpersonal harmony (**Wa**). It is a calculated act of courtesy, not avoidance.";
-  } else if (text.includes("disagree")) {
+  } else if (text.includes("disagreement")) {
     fullReply = "To successfully navigate conflict here, steer completely away from blunt, public low-context debates. Frame your critique collaboratively rather than direct confrontation. Use softening buffer phrases like *'I see your point, but perhaps we could also look at...'* to preserve individual face (**Mianzi** or **Kao**) while maintaining strong relationship capital.";
   } else if (text.includes("small talk")) {
     fullReply = "Small talk boundaries vary sharply. While some low-context destinations prefer light transactional topics (weather, sports), other collective networks use seemingly intrusive personal questions (age, marital status, family) as a genuine tool to establish trust and map out your relational context. Focus on shared baseline topics to test comfort levels first.";
@@ -1074,12 +1074,12 @@ function renderTrack(){
   const el = document.getElementById("screen-track"); const today = todayStr(); const already = STATE.tracker.find(e => e.date === today); const phase = classifyPhase(STATE.tracker); const values = STATE.tracker.slice(-14).map(e=>e.mood);
   el.innerHTML = `<div class="eyebrow" style="margin-top:8px;">ADJUSTMENT CURVE TRACKER</div><div class="screen-title" style="margin-top:2px; font-size:24px;">Psychological States</div><div class="screen-sub">Dips and rises along the adaptation curve reflect active mental integration, not personal failure.</div>
     <div class="card"><div><span class="chip ${phase.name.includes('Frustration')?'rust':phase.name.includes('Honeymoon')?'brass':'sage'}">${phase.name}</span></div><p style="font-size:13.5px; font-weight:700; line-height:1.55; color:var(--text-mute); margin:10px 0 12px;">${phase.note}</p>${values.length ? sparkline(values) : `<div class="empty-state" style="text-align:center; padding:14px 0;"><span class="msg" style="font-weight:700; color:var(--text-mute);">Your long-term cultural adaptation line will plot here as you track your state.</span></div>`}</div>
-    <div class="section-label">${already ? "Today's Check-in" : "How is your adaptation energy today?"}</div>
+    <div class="section-label">Today's Check-in</div>
     <div class="card"><div class="mood-row" style="display:flex; gap:10px; justify-content:space-between; margin:8px 0 6px;">${MOODS.map(m => `<button class="mood-btn ${((already?already.mood:trackSelectedMood)===m.v)?'selected':''}" style="flex:1; aspect-ratio:1; border-radius:18px; border:2px solid var(--line); background:#fff; font-size:24px; cursor:pointer; transition: all 0.1s;" onclick="pickMood(${m.v})" ${already?'disabled':''}>${m.e}</button>`).join("")}</div>
       <div style="text-align:center; font-size:13px; font-weight:800; color:var(--text-mute); margin-bottom:14px;">${already ? MOODS.find(m=>m.v===already.mood).label : (trackSelectedMood ? MOODS.find(m=>m.v===trackSelectedMood).label : "Select an index mapping closest to your state")}</div>
       ${already ? `${already.note ? `<p style="font-size:14px; font-weight:600; color:var(--text-main); background:var(--parchment-dim); padding:12px; border-radius:16px; margin:0;">${escapeHtml(already.note)}</p>` : ""}<div style="text-align:center; margin-top:8px;"><span class="chip">✓ Logged for today</span></div>` : `<textarea id="trackNote" placeholder="Optional notes — what specific interaction happened today?" rows="2"></textarea><div style="height:12px;"></div><button class="btn btn-brass btn-block" ${trackSelectedMood?'':'disabled'} onclick="saveCheckIn();">Save State</button>`}</div>
     <div class="section-label">TRACKING HISTORY</div>
-    ${STATE.tracker.length === 0 ? `<div class="empty-state"><span class="glyph">🧭</span><div class="msg">Consecutive logs build an accurate blueprint of your adaptation phases over time.</div></div>` : `<div class="card" style="padding:8px 12px;">${STATE.tracker.slice().reverse().slice(0,20).map(e => `<div class="list-item"><div class="li-icon">${MOODS.find(m=>m.v===e.mood).e}</div><div class="li-body"><div class="li-title">${fmtDate(e.date)} ➔ ${MOODS.find(m=>m.v===e.mood).label}</div>${e.note ? `<div class="li-sub">${escapeHtml(e.note)}</div>` : ""}</div></div>`).join("")}</div>`}`;
+    ${STATE.tracker.length === 0 ? `<div class="empty-state"><span class="glyph">🧭</span><div class="msg">Consecutive logs build an accurate blueprint of your adaptation phases over time.</div></div>` : `<div class="card" style="padding:8px 12px;">${STATE.tracker.slice().reverse().slice(0,20).map(e => `<div class="list-item"><div class="li-icon">${MOODS.find(m=>m.v===e.mood).e}</div><div class="li-body"><div class="li-title">${fmtDate(e.date)} ➔ ${MOODS.find(m=>m.v===e.mood).label}</div>${e.note ? `<div class="li-sub">${escapeHtml(e.note)}</div>` : ""}</div></div>`).join("")}</div>`}</div>`;
 }
 function pickMood(v){ trackSelectedMood = v; renderTrack(); }
 async function saveCheckIn(){ const note = document.getElementById("trackNote").value.trim(); STATE.tracker.push({ id:uid(), date: todayStr(), mood: trackSelectedMood, note }); trackSelectedMood = null; await storeSet("tracker-entries", STATE.tracker); renderTrack(); renderHome(); renderGrowth(); }
